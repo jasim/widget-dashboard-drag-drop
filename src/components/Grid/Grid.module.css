@@ -1,0 +1,36 @@
+.gridContainer {
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.gridItem {
+  background: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  user-select: none;
+}
+
+.resizeHandle {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 20px;
+  height: 20px;
+  cursor: se-resize;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 0 0 4px 0;
+}
+
+.resizeHandle:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.gridItem:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+}
