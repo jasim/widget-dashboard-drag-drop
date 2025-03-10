@@ -25,7 +25,6 @@ const Header = ({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const widgetTypes = [
-    { type: 'chart', label: 'Chart' },
     { type: 'stats', label: 'Stats' },
     { type: 'table', label: 'Table' },
     { type: 'text', label: 'Text' }

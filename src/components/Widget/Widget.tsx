@@ -1,5 +1,4 @@
 import { WidgetType } from '../../types';
-import ChartWidget from './ChartWidget';
 import StatsWidget from './StatsWidget';
 import TableWidget from './TableWidget';
 import TextWidget from './TextWidget';
@@ -13,8 +12,6 @@ interface WidgetProps {
 const Widget = ({ widget, onRemove }: WidgetProps) => {
   const renderWidgetContent = () => {
     switch (widget.type) {
-      case 'chart':
-        return <ChartWidget />;
       case 'stats':
         return <StatsWidget />;
       case 'table':
