@@ -28,7 +28,7 @@ const Grid: React.FC<GridProps> = ({
   cols = 12,
   isDraggable = true,
   isResizable = true,
-  compactType = 'vertical',
+  compactType = null,
   rowHeight: propRowHeight,
   children
 }) => {

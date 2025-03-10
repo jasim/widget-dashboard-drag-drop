@@ -41,7 +41,7 @@ export const useGridState = ({
   widgets,
   setWidgets,
   cols,
-  compactType = 'vertical',
+  compactType = null,
   rowHeight: propRowHeight,
   setDropTargetArea
 }: UseGridStateProps) => {
@@ -181,10 +181,7 @@ export const useGridState = ({
           }
         }
         
-        // Apply compaction if needed
-        if (compactType === 'vertical') {
-          newLayout = compactLayout(newLayout);
-        }
+        // No compaction - widgets stay where they are placed
         
         // Update widgets with new layout
         setWidgets(layoutToWidgets(widgets, newLayout));
