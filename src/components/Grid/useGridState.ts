@@ -232,20 +232,8 @@ export const useGridState = ({
       h: draggedItem.h
     };
     
-    // Check if the target area overlaps with any other items
-    const isOverlapping = layout.some(item => {
-      if (item.i === dragState.itemId) return false;
-      
-      return !(
-        targetArea.x + targetArea.w <= item.x ||
-        targetArea.x >= item.x + item.w ||
-        targetArea.y + targetArea.h <= item.y ||
-        targetArea.y >= item.y + item.h
-      );
-    });
-    
-    // Only show the drop target if it's a valid position
-    setDropTargetArea(isOverlapping ? null : targetArea);
+    // Always show the drop target indicator regardless of overlap
+    setDropTargetArea(targetArea);
   };
 
   return {
