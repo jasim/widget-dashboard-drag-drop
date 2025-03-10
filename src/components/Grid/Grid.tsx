@@ -1,5 +1,6 @@
 import {DropAction} from "@/grid/placement.ts";
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import GridOverlay from './GridOverlay';
 import {Layout, WidgetType} from '../../types';
 import GridItem from './GridItem';
 import BorderForHoveredGridItem from './BorderForHoveredGridItem';
@@ -60,6 +61,9 @@ const Grid: React.FC<GridProps> = ({
     h: number;
   } | null>(null);
   
+  // State to track if dragging is active
+  const [isDragging, setIsDragging] = useState(false);
+  
   // Use our custom hooks for grid state management
   const { layout, updateLayout, applyLayout } = useGridLayout({
     widgets,
@@ -112,7 +116,26 @@ const Grid: React.FC<GridProps> = ({
     if (!dragState.active && dragState.itemId !== null) {
       applyLayout();
     }
+    
+    // Update dragging state for grid overlay
+    setIsDragging(dragState.active);
   }, [dragState.active, dragState.itemId, applyLayout]);
+  
+  // Get container width for grid overlay
+  const [containerWidth, setContainerWidth] = useState(0);
+  
+  // Update container width on resize
+  const updateContainerWidth = useCallback(() => {
+    if (containerRef.current) {
+      setContainerWidth(containerRef.current.offsetWidth);
+    }
+  }, []);
+  
+  useEffect(() => {
+    updateContainerWidth();
+    window.addEventListener('resize', updateContainerWidth);
+    return () => window.removeEventListener('resize', updateContainerWidth);
+  }, [updateContainerWidth]);
   
   // Update debug info whenever relevant state changes - using a ref to prevent infinite loops
   const prevDebugStateRef = useRef<{
@@ -186,6 +209,15 @@ const Grid: React.FC<GridProps> = ({
       style={{ height: `${gridHeight}px` }}
       onMouseDown={handleMouseDown}
     >
+      {/* Grid overlay - only visible during drag */}
+      <GridOverlay 
+        visible={isDragging}
+        cols={cols}
+        rowHeight={gridRowHeight}
+        containerWidth={containerWidth}
+        containerHeight={gridHeight}
+      />
+      
       <BorderForHoveredGridItem 
         hoveredItemId={hoveredItemId}
         layout={layout}
