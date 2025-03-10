@@ -45,25 +45,19 @@ const Dashboard = ({ widgets, setWidgets, onRemoveWidget, onAddWidget }: Dashboa
     dropAction?: DropAction | null;
     dropTargetArea?: { x: number; y: number; w: number; h: number } | null;
   }) => {
-    setDebugInfo(prevInfo => {
-      // Only update if something meaningful has changed
-      if (
-        prevInfo.dragState.active !== info.dragState.active ||
-        prevInfo.dragState.itemId !== info.dragState.itemId ||
-        prevInfo.dragState.isResize !== info.dragState.isResize ||
-        prevInfo.dropAction?.type !== info.dropAction?.type ||
-        JSON.stringify(prevInfo.dropTargetArea) !== JSON.stringify(info.dropTargetArea) ||
-        prevInfo.layout.length !== info.layout.length
-      ) {
-        return {
-          ...prevInfo,
-          dragState: info.dragState,
-          layout: info.layout,
-          dropAction: info.dropAction || null,
-          dropTargetArea: info.dropTargetArea || null
-        };
-      }
-      return prevInfo;
+    setDebugInfo({
+      dragState: {
+        active: info.dragState.active,
+        itemId: info.dragState.itemId,
+        startPos: info.dragState.startPos,
+        startGrid: info.dragState.startGrid,
+        isResize: info.dragState.isResize,
+        startSize: info.dragState.startSize,
+        dropTarget: info.dragState.dropTarget
+      },
+      layout: info.layout,
+      dropAction: info.dropAction || null,
+      dropTargetArea: info.dropTargetArea || null
     });
   }, []);
 

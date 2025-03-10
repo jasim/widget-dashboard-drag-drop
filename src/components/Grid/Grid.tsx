@@ -1,5 +1,5 @@
 import {DropAction} from "@/grid/placement.ts";
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {Layout, WidgetType} from '../../types';
 import GridItem from './GridItem';
 import BorderForHoveredGridItem from './BorderForHoveredGridItem';
@@ -114,35 +114,53 @@ const Grid: React.FC<GridProps> = ({
     }
   }, [dragState.active, dragState.itemId, applyLayout]);
   
-  // Update debug info whenever relevant state changes
+  // Update debug info whenever relevant state changes - using a ref to prevent infinite loops
+  const prevDebugStateRef = useRef({
+    active: false,
+    itemId: null,
+    isResize: false,
+    dropActionType: null,
+    dropTargetArea: null,
+    layoutLength: 0
+  });
+  
   useEffect(() => {
-    if (onDebugInfoUpdate) {
-      // Use JSON.stringify to create a stable dependency for comparison
-      const dragStateForDebug = {
-        active: dragState.active,
-        itemId: dragState.itemId,
-        isResize: dragState.isResize,
-        dropAction: dragState.dropTarget?.dropAction
-      };
-      
+    if (!onDebugInfoUpdate) return;
+    
+    // Extract only the necessary properties to compare
+    const currentState = {
+      active: dragState.active,
+      itemId: dragState.itemId,
+      isResize: dragState.isResize,
+      dropActionType: dragState.dropTarget?.dropAction?.type,
+      dropTargetArea: dropTargetArea ? 
+        `${dropTargetArea.x},${dropTargetArea.y},${dropTargetArea.w},${dropTargetArea.h}` : null,
+      layoutLength: layout.length
+    };
+    
+    // Compare with previous state using a simple string comparison
+    const prevStateStr = JSON.stringify(prevDebugStateRef.current);
+    const currentStateStr = JSON.stringify(currentState);
+    
+    // Only update if something meaningful has changed
+    if (prevStateStr !== currentStateStr) {
       onDebugInfoUpdate({
         dragState,
         layout,
         dropAction: dragState.dropTarget?.dropAction,
         dropTargetArea
       });
+      
+      // Update the ref with current state
+      prevDebugStateRef.current = currentState;
     }
   }, [
     dragState.active, 
     dragState.itemId, 
     dragState.isResize, 
     dragState.dropTarget?.dropAction?.type,
-    dropTargetArea?.x,
-    dropTargetArea?.y,
-    dropTargetArea?.w,
-    dropTargetArea?.h,
-    layout.length,
-    onDebugInfoUpdate
+    dropTargetArea,
+    layout.length
   ]);
 
   // Handle mouse enter and leave for grid items
