@@ -117,6 +117,14 @@ const Grid: React.FC<GridProps> = ({
   // Update debug info whenever relevant state changes
   useEffect(() => {
     if (onDebugInfoUpdate) {
+      // Use JSON.stringify to create a stable dependency for comparison
+      const dragStateForDebug = {
+        active: dragState.active,
+        itemId: dragState.itemId,
+        isResize: dragState.isResize,
+        dropAction: dragState.dropTarget?.dropAction
+      };
+      
       onDebugInfoUpdate({
         dragState,
         layout,
@@ -124,7 +132,18 @@ const Grid: React.FC<GridProps> = ({
         dropTargetArea
       });
     }
-  }, [dragState, layout, dropTargetArea, onDebugInfoUpdate]);
+  }, [
+    dragState.active, 
+    dragState.itemId, 
+    dragState.isResize, 
+    dragState.dropTarget?.dropAction?.type,
+    dropTargetArea?.x,
+    dropTargetArea?.y,
+    dropTargetArea?.w,
+    dropTargetArea?.h,
+    layout.length,
+    onDebugInfoUpdate
+  ]);
 
   // Handle mouse enter and leave for grid items
   const handleItemMouseEnter = (id: string) => {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { WidgetType } from '@/types.ts';
 import { DragState } from '../../grid/hooks/useDragState';
 import { DropAction } from '../../grid/placement';
@@ -39,19 +39,33 @@ const Dashboard = ({ widgets, setWidgets, onRemoveWidget, onAddWidget }: Dashboa
   const rowHeight = 100;
 
   // Handler to update debug information
-  const handleDebugInfoUpdate = (info: {
+  const handleDebugInfoUpdate = React.useCallback((info: {
     dragState: DragState;
     layout: Array<{ i: string; x: number; y: number; w: number; h: number }>;
     dropAction?: DropAction | null;
     dropTargetArea?: { x: number; y: number; w: number; h: number } | null;
   }) => {
-    setDebugInfo({
-      ...debugInfo,
-      ...info,
-      dropAction: info.dropAction || null,
-      dropTargetArea: info.dropTargetArea || null
+    setDebugInfo(prevInfo => {
+      // Only update if something meaningful has changed
+      if (
+        prevInfo.dragState.active !== info.dragState.active ||
+        prevInfo.dragState.itemId !== info.dragState.itemId ||
+        prevInfo.dragState.isResize !== info.dragState.isResize ||
+        prevInfo.dropAction?.type !== info.dropAction?.type ||
+        JSON.stringify(prevInfo.dropTargetArea) !== JSON.stringify(info.dropTargetArea) ||
+        prevInfo.layout.length !== info.layout.length
+      ) {
+        return {
+          ...prevInfo,
+          dragState: info.dragState,
+          layout: info.layout,
+          dropAction: info.dropAction || null,
+          dropTargetArea: info.dropTargetArea || null
+        };
+      }
+      return prevInfo;
     });
-  };
+  }, []);
 
   return (
     <div className={styles.dashboardContainer}>
