@@ -14,7 +14,7 @@ export interface DragState {
   dropTarget?: {
     targetItem: Layout | null;
     targetArea: { x: number; y: number; w: number; h: number };
-    dropAction?: DropAction | null;
+    dropAction: DropAction | null;
   };
 }
 
@@ -158,7 +158,7 @@ export const useDragState = ({
         h: source.h
       };
       
-      // Store the drop action for debugging display
+      // Store the drop action for later use in endDrag
     } else {
       // Not hovering over another item, calculate position based on drag delta
       const deltaX = clientX - dragState.startPos.x;
@@ -182,13 +182,16 @@ export const useDragState = ({
       };
     }
     
+    // Calculate drop action once
+    const dropAction = targetItem ? decideDropAction(draggedItem, targetItem) : null;
+    
     // Update drag state with the target information
     setDragState(prev => ({
       ...prev,
       dropTarget: {
         targetItem: targetItem || null, // Ensure it's Layout | null, not undefined
         targetArea,
-        dropAction: targetItem ? decideDropAction(draggedItem, targetItem) : null
+        dropAction
       }
     }));
     
@@ -208,14 +211,12 @@ export const useDragState = ({
       let newLayout = [...layout];
       
       if (!dragState.isResize && dragState.dropTarget) {
-        const { targetItem, targetArea } = dragState.dropTarget;
+        const { targetItem, targetArea, dropAction } = dragState.dropTarget;
         
-        if (targetItem) {
-          // We're dropping onto another item, use placement logic
-          const action = decideDropAction(draggedItem, targetItem);
-          
+        if (targetItem && dropAction) {
+          // We're dropping onto another item, use the already calculated drop action
           // Apply the action to get new positions
-          const { source, target } = applyDropAction(draggedItem, targetItem, action);
+          const { source, target } = applyDropAction(draggedItem, targetItem, dropAction);
           
           // Update the layout with new positions
           newLayout = newLayout.map(item => {
