@@ -13,6 +13,8 @@ interface GridProps {
   isResizable?: boolean;
   compactType?: 'vertical' | 'horizontal' | null;
   children: React.ReactNode[];
+  // We need to add rowHeight back as an optional prop with default value
+  rowHeight?: number;
 }
 
 /**
@@ -25,8 +27,11 @@ const Grid: React.FC<GridProps> = ({
   isDraggable = true,
   isResizable = true,
   compactType = 'vertical',
+  rowHeight: propRowHeight,
   children
 }) => {
+  // Use the prop value if provided, otherwise use the default
+  const gridRowHeight = propRowHeight || rowHeight;
   // Use our custom hook for grid state management
   const {
     layout,
@@ -72,7 +77,7 @@ const Grid: React.FC<GridProps> = ({
   };
 
   // Calculate grid height based on layout
-  const gridHeight = Math.max(getLayoutHeight(layout), 4) * rowHeight;
+  const gridHeight = Math.max(getLayoutHeight(layout), 4) * gridRowHeight;
 
   return (
     <div 
@@ -97,7 +102,7 @@ const Grid: React.FC<GridProps> = ({
             y={layoutItem.y}
             w={layoutItem.w}
             h={layoutItem.h}
-            rowHeight={rowHeight}
+            rowHeight={gridRowHeight}
             colWidth={colWidth}
             isResizable={isResizable}
             registerRef={registerItemRef}

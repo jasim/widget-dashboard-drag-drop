@@ -23,14 +23,21 @@ interface UseGridStateProps {
   setWidgets: React.Dispatch<React.SetStateAction<WidgetType[]>>;
   cols: number;
   compactType?: 'vertical' | 'horizontal' | null;
+  rowHeight?: number;
 }
+
+// Default row height as a constant
+export const rowHeight = 100;
 
 export const useGridState = ({
   widgets,
   setWidgets,
   cols,
-  compactType = 'vertical'
+  compactType = 'vertical',
+  rowHeight: propRowHeight
 }: UseGridStateProps) => {
+  // Use provided rowHeight or default
+  const gridRowHeight = propRowHeight || rowHeight;
   const [layout, setLayout] = useState<Layout[]>([]);
   const [containerWidth, setContainerWidth] = useState(0);
   const [dragState, setDragState] = useState<DragState>({
@@ -83,7 +90,7 @@ export const useGridState = ({
             deltaX,
             deltaY,
             colWidth,
-            rowHeight,
+            gridRowHeight,
             2, // minW
             2  // minH
           );
@@ -197,5 +204,3 @@ export const useGridState = ({
   };
 };
 
-// This is a constant, so we define it outside the hook
-export const rowHeight = 100;
