@@ -25,15 +25,6 @@ export const decideDropAction = (
   if (source.i === target.i) {
     return { type: "reject", reason: "Cannot place an item onto itself" };
   }
-  const overlapX = (source.x + source.w / 2) - (target.x + target.w / 2);
-  const overlapY = (source.y + source.h / 2) - (target.y + target.h / 2);
-  const absOverlapX = Math.abs(overlapX);
-  const absOverlapY = Math.abs(overlapY);
-
-  // If source is larger, swap
-  if (source.w >= target.w && source.h >= target.h) {
-    return { type: "swap" };
-  }
 
   // If source is too small to meaningfully split target, reject
   const minSize = 1; // Minimum grid units
@@ -41,22 +32,78 @@ export const decideDropAction = (
     return { type: "reject", reason: "Source too small to split target" };
   }
 
-  // Determine placement direction
-  const isHorizontal = absOverlapX > absOverlapY;
-
-  if (isHorizontal) {
-    if (overlapX < 0) {
-      return { type: "placeLeft", newWidth: Math.max(1, Math.floor(target.w * 0.4)) };
-    } else {
-      return { type: "placeRight", newWidth: Math.max(1, Math.floor(target.w * 0.4)) };
-    }
-  } else {
-    if (overlapY < 0) {
-      return { type: "placeTop", newHeight: Math.max(1, Math.floor(target.h * 0.4)) };
-    } else {
-      return { type: "placeBottom", newHeight: Math.max(1, Math.floor(target.h * 0.4)) };
+  // Calculate relative position of source center within target
+  // Normalize to 0-1 range where (0,0) is top-left of target and (1,1) is bottom-right
+  const sourceCenter = {
+    x: source.x + source.w / 2,
+    y: source.y + source.h / 2
+  };
+  
+  const targetLeft = target.x;
+  const targetRight = target.x + target.w;
+  const targetTop = target.y;
+  const targetBottom = target.y + target.h;
+  
+  // Calculate normalized position (0-1) within target
+  const normalizedX = (sourceCenter.x - targetLeft) / target.w;
+  const normalizedY = (sourceCenter.y - targetTop) / target.h;
+  
+  // Divide target into 3x3 grid with proportions 25%, 50%, 25%
+  // Horizontal sections: left (0-0.25), center (0.25-0.75), right (0.75-1)
+  // Vertical sections: top (0-0.25), center (0.25-0.75), bottom (0.75-1)
+  
+  const isLeftSection = normalizedX < 0.25;
+  const isRightSection = normalizedX > 0.75;
+  const isTopSection = normalizedY < 0.25;
+  const isBottomSection = normalizedY > 0.75;
+  const isCenterXSection = !isLeftSection && !isRightSection;
+  const isCenterYSection = !isTopSection && !isBottomSection;
+  
+  // Calculate new dimensions for split operations
+  const newWidth = Math.max(1, Math.floor(target.w * 0.4));
+  const newHeight = Math.max(1, Math.floor(target.h * 0.4));
+  
+  // Determine action based on which of the 9 sections the source is in
+  
+  // Center section - swap
+  if (isCenterXSection && isCenterYSection) {
+    return { type: "swap" };
+  }
+  
+  // Left column
+  if (isLeftSection) {
+    if (isCenterYSection) {
+      return { type: "placeLeft", newWidth };
+    } else if (isTopSection) {
+      return { type: "placeLeft", newWidth };
+    } else { // Bottom-left
+      return { type: "placeLeft", newWidth };
     }
   }
+  
+  // Right column
+  if (isRightSection) {
+    if (isCenterYSection) {
+      return { type: "placeRight", newWidth };
+    } else if (isTopSection) {
+      return { type: "placeRight", newWidth };
+    } else { // Bottom-right
+      return { type: "placeRight", newWidth };
+    }
+  }
+  
+  // Top row (center column)
+  if (isTopSection && isCenterXSection) {
+    return { type: "placeTop", newHeight };
+  }
+  
+  // Bottom row (center column)
+  if (isBottomSection && isCenterXSection) {
+    return { type: "placeBottom", newHeight };
+  }
+  
+  // Fallback (should not reach here with the above conditions)
+  return { type: "swap" };
 };
 
 /**
