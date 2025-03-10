@@ -55,7 +55,7 @@ const Dashboard = ({ widgets, setWidgets, onRemoveWidget }: DashboardProps) => {
         onLayoutChange={handleLayoutChange}
         isDraggable
         isResizable
-        compactType="vertical"
+        compactType="horizontal"
       >
         {widgets.map(widget => (
           <div key={widget.id} className={styles.widgetContainer}>
