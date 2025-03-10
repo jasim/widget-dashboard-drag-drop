@@ -81,7 +81,8 @@ export function applyDropOperation(
   layout: Layout[],
   draggedItemId: string,
   isResize: boolean,
-  dropTarget?: DragTarget
+  dropTarget?: DragTarget,
+  originalItem?: Layout
 ): Layout[] {
   let newLayout = [...layout];
   const draggedItem = layout.find(item => item.i === draggedItemId);
@@ -93,18 +94,48 @@ export function applyDropOperation(
     
     if (targetItem && dropAction) {
       // We're dropping onto another item, use the calculated drop action
-      const { source, target } = applyDropAction(draggedItem, targetItem, dropAction);
       
-      // Update the layout with new positions
-      return newLayout.map(item => {
-        if (item.i === draggedItem.i) {
-          return { ...item, x: source.x, y: source.y, w: source.w, h: source.h };
-        }
-        if (item.i === targetItem.i) {
-          return { ...item, x: target.x, y: target.y, w: target.w, h: target.h };
-        }
-        return item;
-      });
+      // For swap actions, use the original item position if available
+      if (dropAction.type === "swap" && originalItem) {
+        // Create a custom swap that uses the original position
+        return newLayout.map(item => {
+          if (item.i === draggedItem.i) {
+            // Move dragged item to target position
+            return { 
+              ...item, 
+              x: targetItem.x, 
+              y: targetItem.y, 
+              w: targetItem.w, 
+              h: targetItem.h 
+            };
+          }
+          if (item.i === targetItem.i) {
+            // Move target to original position
+            return { 
+              ...item, 
+              x: originalItem.x, 
+              y: originalItem.y, 
+              w: originalItem.w, 
+              h: originalItem.h 
+            };
+          }
+          return item;
+        });
+      } else {
+        // For non-swap actions, use the standard applyDropAction
+        const { source, target } = applyDropAction(draggedItem, targetItem, dropAction);
+        
+        // Update the layout with new positions
+        return newLayout.map(item => {
+          if (item.i === draggedItem.i) {
+            return { ...item, x: source.x, y: source.y, w: source.w, h: source.h };
+          }
+          if (item.i === targetItem.i) {
+            return { ...item, x: target.x, y: target.y, w: target.w, h: target.h };
+          }
+          return item;
+        });
+      }
     } else {
       // Standard grid placement - use the target area
       return updateLayoutItem(newLayout, draggedItemId, {

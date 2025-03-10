@@ -11,6 +11,7 @@ export interface DragState {
   startGrid: { x: number; y: number };
   isResize: boolean;
   startSize?: { w: number; h: number };
+  originalItem?: Layout;
   dropTarget?: DragTarget;
 }
 
@@ -55,6 +56,7 @@ export const useDragState = ({
       startPos: { x: clientX, y: clientY },
       startGrid: { x: item.x, y: item.y },
       isResize,
+      originalItem: { ...item },
       ...(isResize ? { startSize: { w: item.w, h: item.h } } : {})
     });
   };
@@ -171,7 +173,8 @@ export const useDragState = ({
         layout,
         dragState.itemId,
         dragState.isResize,
-        dragState.dropTarget
+        dragState.dropTarget,
+        dragState.originalItem
       );
       
       // Update layout
