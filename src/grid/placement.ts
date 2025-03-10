@@ -94,9 +94,11 @@ export const applyDropAction = (
     case "placeLeft":
       return {
         // For horizontal placement, ensure source is at least as tall as target
+        // and align tops
         source: { 
           ...source, 
           x: target.x, 
+          y: target.y, // Align top with target
           w: action.newWidth,
           h: source.h < target.h ? target.h : source.h 
         },
@@ -106,9 +108,11 @@ export const applyDropAction = (
     case "placeRight":
       return {
         // For horizontal placement, ensure source is at least as tall as target
+        // and align tops
         source: { 
           ...source, 
-          x: target.x + target.w - action.newWidth, 
+          x: target.x + target.w - action.newWidth,
+          y: target.y, // Align top with target
           w: action.newWidth,
           h: source.h < target.h ? target.h : source.h 
         },
@@ -118,8 +122,10 @@ export const applyDropAction = (
     case "placeTop":
       return {
         // For vertical placement, ensure source is at least as wide as target
+        // and align lefts
         source: { 
           ...source, 
+          x: target.x, // Align left with target
           y: target.y, 
           h: action.newHeight,
           w: source.w < target.w ? target.w : source.w 
@@ -130,8 +136,10 @@ export const applyDropAction = (
     case "placeBottom":
       return {
         // For vertical placement, ensure source is at least as wide as target
+        // and align lefts
         source: { 
           ...source, 
+          x: target.x, // Align left with target
           y: target.y + target.h - action.newHeight, 
           h: action.newHeight,
           w: source.w < target.w ? target.w : source.w 
