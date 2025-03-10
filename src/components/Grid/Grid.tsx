@@ -20,13 +20,8 @@ interface DragState {
   itemId: string | null;
   startPos: { x: number; y: number };
   startGrid: { x: number; y: number };
-}
-
-interface ResizeState {
-  active: boolean;
-  itemId: string | null;
-  startPos: { x: number; y: number };
-  startSize: { w: number; h: number };
+  isResize: boolean;
+  startSize?: { w: number; h: number };
 }
 
 const Grid: React.FC<GridProps> = ({
@@ -43,20 +38,15 @@ const Grid: React.FC<GridProps> = ({
   const [containerWidth, setContainerWidth] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const resizeHandleRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   
-  // Drag and resize state
+  // Unified drag/resize state
   const [dragState, setDragState] = useState<DragState>({
     active: false,
     itemId: null,
     startPos: { x: 0, y: 0 },
-    startGrid: { x: 0, y: 0 }
-  });
-  
-  const [resizeState, setResizeState] = useState<ResizeState>({
-    active: false,
-    itemId: null,
-    startPos: { x: 0, y: 0 },
-    startSize: { w: 0, h: 0 }
+    startGrid: { x: 0, y: 0 },
+    isResize: false
   });
 
   // Calculate column width based on container width
@@ -87,44 +77,43 @@ const Grid: React.FC<GridProps> = ({
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (dragState.active && dragState.itemId) {
-        // Handle dragging
         const deltaX = e.clientX - dragState.startPos.x;
         const deltaY = e.clientY - dragState.startPos.y;
         
-        // Convert pixel delta to grid units
-        const gridDeltaX = Math.round(deltaX / colWidth);
-        const gridDeltaY = Math.round(deltaY / rowHeight);
-        
-        const newX = Math.max(0, dragState.startGrid.x + gridDeltaX);
-        const newY = Math.max(0, dragState.startGrid.y + gridDeltaY);
-        
-        // Update layout
-        const newLayout = layout.map(item => 
-          item.i === dragState.itemId ? { ...item, x: newX, y: newY } : item
-        );
-        setLayout(newLayout);
-      } else if (resizeState.active && resizeState.itemId) {
-        // Handle resizing
-        const deltaX = e.clientX - resizeState.startPos.x;
-        const deltaY = e.clientY - resizeState.startPos.y;
-        
-        // Convert pixel delta to grid units
-        const gridDeltaW = Math.round(deltaX / colWidth);
-        const gridDeltaH = Math.round(deltaY / rowHeight);
-        
-        const newW = Math.max(2, resizeState.startSize.w + gridDeltaW);
-        const newH = Math.max(2, resizeState.startSize.h + gridDeltaH);
-        
-        // Update layout
-        const newLayout = layout.map(item => 
-          item.i === resizeState.itemId ? { ...item, w: newW, h: newH } : item
-        );
-        setLayout(newLayout);
+        if (dragState.isResize && dragState.startSize) {
+          // Handle resizing
+          // Convert pixel delta to grid units
+          const gridDeltaW = Math.round(deltaX / colWidth);
+          const gridDeltaH = Math.round(deltaY / rowHeight);
+          
+          const newW = Math.max(2, dragState.startSize.w + gridDeltaW);
+          const newH = Math.max(2, dragState.startSize.h + gridDeltaH);
+          
+          // Update layout
+          const newLayout = layout.map(item => 
+            item.i === dragState.itemId ? { ...item, w: newW, h: newH } : item
+          );
+          setLayout(newLayout);
+        } else {
+          // Handle dragging
+          // Convert pixel delta to grid units
+          const gridDeltaX = Math.round(deltaX / colWidth);
+          const gridDeltaY = Math.round(deltaY / rowHeight);
+          
+          const newX = Math.max(0, dragState.startGrid.x + gridDeltaX);
+          const newY = Math.max(0, dragState.startGrid.y + gridDeltaY);
+          
+          // Update layout
+          const newLayout = layout.map(item => 
+            item.i === dragState.itemId ? { ...item, x: newX, y: newY } : item
+          );
+          setLayout(newLayout);
+        }
       }
     };
     
     const handleMouseUp = () => {
-      if (dragState.active || resizeState.active) {
+      if (dragState.active) {
         // Apply compaction if needed
         let newLayout = [...layout];
         if (compactType === 'vertical') {
@@ -134,19 +123,13 @@ const Grid: React.FC<GridProps> = ({
         // Update widgets with new layout
         setWidgets(layoutToWidgets(widgets, newLayout));
         
-        // Reset states
+        // Reset state
         setDragState({
           active: false,
           itemId: null,
           startPos: { x: 0, y: 0 },
-          startGrid: { x: 0, y: 0 }
-        });
-        
-        setResizeState({
-          active: false,
-          itemId: null,
-          startPos: { x: 0, y: 0 },
-          startSize: { w: 0, h: 0 }
+          startGrid: { x: 0, y: 0 },
+          isResize: false
         });
       }
     };
@@ -162,45 +145,66 @@ const Grid: React.FC<GridProps> = ({
     };
   }, [dragState, resizeState, layout, colWidth, rowHeight, compactType, widgets, setWidgets]);
   
-  // Handle drag start
-  const handleDragStart = (e: React.MouseEvent, id: string) => {
-    if (!isDraggable) return;
+  // Handle mouse down on the grid container
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Find the target element and check if it's a grid item or resize handle
+    const target = e.target as HTMLElement;
     
-    e.preventDefault();
+    // Find the closest grid item parent
+    let gridItemElement = target.closest(`.${styles.gridItem}`) as HTMLElement;
+    if (!gridItemElement) return;
+    
+    // Get the widget id from the element
+    const id = gridItemElement.dataset.id;
+    if (!id) return;
+    
     const item = layout.find(item => item.i === id);
     if (!item) return;
     
-    setDragState({
-      active: true,
-      itemId: id,
-      startPos: { x: e.clientX, y: e.clientY },
-      startGrid: { x: item.x, y: item.y }
-    });
-  };
-  
-  // Handle resize start
-  const handleResizeStart = (e: React.MouseEvent, id: string) => {
-    if (!isResizable) return;
+    // Check if it's a resize handle
+    const isResizeHandle = target.closest(`.${styles.resizeHandle}`);
     
-    e.preventDefault();
-    e.stopPropagation();
-    const item = layout.find(item => item.i === id);
-    if (!item) return;
-    
-    setResizeState({
-      active: true,
-      itemId: id,
-      startPos: { x: e.clientX, y: e.clientY },
-      startSize: { w: item.w, h: item.h }
-    });
+    if (isResizeHandle && isResizable) {
+      // Handle resize start
+      e.preventDefault();
+      e.stopPropagation();
+      
+      setDragState({
+        active: true,
+        itemId: id,
+        startPos: { x: e.clientX, y: e.clientY },
+        startGrid: { x: item.x, y: item.y },
+        isResize: true,
+        startSize: { w: item.w, h: item.h }
+      });
+    } else if (isDraggable) {
+      // Handle drag start
+      e.preventDefault();
+      
+      setDragState({
+        active: true,
+        itemId: id,
+        startPos: { x: e.clientX, y: e.clientY },
+        startGrid: { x: item.x, y: item.y },
+        isResize: false
+      });
+    }
   };
 
-  // Register item ref
+  // Register item and resize handle refs
   const registerItemRef = (id: string, ref: HTMLDivElement | null) => {
     if (ref) {
       itemRefs.current.set(id, ref);
     } else {
       itemRefs.current.delete(id);
+    }
+  };
+  
+  const registerResizeHandleRef = (id: string, ref: HTMLDivElement | null) => {
+    if (ref) {
+      resizeHandleRefs.current.set(id, ref);
+    } else {
+      resizeHandleRefs.current.delete(id);
     }
   };
 
@@ -209,6 +213,7 @@ const Grid: React.FC<GridProps> = ({
       ref={containerRef}
       className={styles.gridContainer}
       style={{ height: `${Math.max(...layout.map(item => item.y + item.h), 4) * rowHeight}px` }}
+      onMouseDown={handleMouseDown}
     >
       {React.Children.map(children, (child, index) => {
         if (!React.isValidElement(child)) return null;
@@ -228,13 +233,11 @@ const Grid: React.FC<GridProps> = ({
             h={layoutItem.h}
             rowHeight={rowHeight}
             colWidth={colWidth}
-            isDraggable={isDraggable}
             isResizable={isResizable}
-            onDragStart={handleDragStart}
-            onResizeStart={handleResizeStart}
             registerRef={registerItemRef}
-            isDragging={dragState.active && dragState.itemId === layoutItem.i}
-            isResizing={resizeState.active && resizeState.itemId === layoutItem.i}
+            registerResizeHandleRef={registerResizeHandleRef}
+            isDragging={dragState.active && dragState.itemId === layoutItem.i && !dragState.isResize}
+            isResizing={dragState.active && dragState.itemId === layoutItem.i && dragState.isResize}
           >
             {child}
           </GridItem>

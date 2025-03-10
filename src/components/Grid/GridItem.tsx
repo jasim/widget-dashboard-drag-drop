@@ -9,13 +9,11 @@ interface GridItemProps {
   h: number;
   rowHeight: number;
   colWidth: number;
-  isDraggable: boolean;
   isResizable: boolean;
   isDragging: boolean;
   isResizing: boolean;
-  onDragStart: (e: React.MouseEvent, id: string) => void;
-  onResizeStart: (e: React.MouseEvent, id: string) => void;
   registerRef: (id: string, ref: HTMLDivElement | null) => void;
+  registerResizeHandleRef: (id: string, ref: HTMLDivElement | null) => void;
   children: React.ReactNode;
 }
 
@@ -27,22 +25,28 @@ const GridItem: React.FC<GridItemProps> = ({
   h,
   rowHeight,
   colWidth,
-  isDraggable,
   isResizable,
   isDragging,
   isResizing,
-  onDragStart,
-  onResizeStart,
   registerRef,
+  registerResizeHandleRef,
   children
 }) => {
   const elementRef = useRef<HTMLDivElement>(null);
+  const resizeHandleRef = useRef<HTMLDivElement>(null);
 
-  // Register ref with parent Grid component
+  // Register refs with parent Grid component
   useEffect(() => {
     registerRef(id, elementRef.current);
     return () => registerRef(id, null);
   }, [id, registerRef]);
+
+  useEffect(() => {
+    if (isResizable && resizeHandleRef.current) {
+      registerResizeHandleRef(id, resizeHandleRef.current);
+      return () => registerResizeHandleRef(id, null);
+    }
+  }, [id, isResizable, registerResizeHandleRef]);
 
   // Calculate position and size in pixels
   const style = {
@@ -54,28 +58,19 @@ const GridItem: React.FC<GridItemProps> = ({
     zIndex: isDragging || isResizing ? 2 : 1
   };
 
-  const handleDragStart = (e: React.MouseEvent) => {
-    if (!isDraggable) return;
-    onDragStart(e, id);
-  };
-
-  const handleResizeStart = (e: React.MouseEvent) => {
-    if (!isResizable) return;
-    onResizeStart(e, id);
-  };
-
   return (
     <div
       ref={elementRef}
       className={styles.gridItem}
       style={style}
-      onMouseDown={handleDragStart}
+      data-id={id}
     >
       {children}
       {isResizable && (
         <div 
+          ref={resizeHandleRef}
           className={styles.resizeHandle}
-          onMouseDown={handleResizeStart}
+          data-id={id}
         />
       )}
     </div>
