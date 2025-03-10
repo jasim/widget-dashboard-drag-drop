@@ -9,6 +9,7 @@ function App() {
     {id: '3', type: 'table', title: 'Recent Transactions', x: 8, y: 0, w: 4, h: 3},
     {id: '4', type: 'stats', title: 'Performance Stats', x: 0, y: 2, w: 4, h: 3},
     {id: '5', type: 'text', title: 'Important Notes', x: 4, y: 2, w: 4, h: 3},
+    {id: '6', type: 'table', title: 'Data Analysis', x: 8, y: 3, w: 4, h: 3},
   ])
 
   const addWidget = (type: string) => {
