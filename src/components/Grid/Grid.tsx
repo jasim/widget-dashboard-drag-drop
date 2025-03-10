@@ -1,12 +1,13 @@
+import {DropAction} from "@/grid/placement.ts";
 import React, { useState } from 'react';
-import { WidgetType } from '../../types';
+import {Layout, WidgetType} from '../../types';
 import GridItem from './GridItem';
 import BorderForHoveredGridItem from './BorderForHoveredGridItem';
 import DropTargetIndicator from './DropTargetIndicator';
 import { getLayoutHeight } from '../../grid/geometry';
 import { useEffect } from 'react';
 import { useGridLayout } from '../../grid/hooks/useGridLayout';
-import { useDragState } from '../../grid/hooks/useDragState';
+import {DragState, useDragState} from '../../grid/hooks/useDragState';
 import { useGridDom } from '../../grid/hooks/useGridDom';
 import { useGridEvents } from '../../grid/hooks/useGridEvents';
 import styles from './Grid.module.css';
