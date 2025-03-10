@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Layout } from '../../types';
 import { updateLayoutItem } from '../layout';
-import { calculateDragPosition } from '../geometry';
+import { calculateDragPosition, calculateResizeSize } from '../geometry';
 import { decideDropAction, applyDropAction } from '../placement';
 
 export interface DragState {

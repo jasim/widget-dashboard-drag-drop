@@ -15,7 +15,8 @@ const BorderForHoveredGridItem: React.FC<BorderForHoveredGridItemProps> = ({
 }) => {
   const [style, setStyle] = useState({
     display: 'none',
-    transform: 'translate(0px, 0px)',
+    left: '0px',
+    top: '0px',
     width: '0px',
     height: '0px'
   });
