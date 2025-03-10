@@ -22,7 +22,8 @@ const DropTargetIndicator: React.FC<DropTargetIndicatorProps> = ({
 
   const style = {
     position: 'absolute' as const,
-    transform: `translate(${targetArea.x * colWidth}px, ${targetArea.y * rowHeight}px)`,
+    left: `${targetArea.x * colWidth}px`,
+    top: `${targetArea.y * rowHeight}px`,
     width: `${targetArea.w * colWidth}px`,
     height: `${targetArea.h * rowHeight}px`,
     backgroundColor: 'rgba(59, 130, 246, 0.3)', // Tailwind blue-500 with opacity

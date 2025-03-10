@@ -170,7 +170,7 @@ export const useGridState = ({
               return item;
             });
           } else {
-            // Standard grid placement
+            // Standard grid placement - use the same logic as in updateDropTargetArea
             const newPos = {
               x: Math.max(0, Math.min(gridX, cols - draggedItem.w)),
               y: Math.max(0, gridY)
@@ -302,6 +302,8 @@ export const useGridState = ({
       });
     } else {
       // Not hovering over another item, use standard grid placement
+      // Calculate the position based on the mouse position, not grid position
+      // This ensures the widget follows the cursor exactly
       const targetArea = {
         x: Math.max(0, Math.min(gridX, cols - draggedItem.w)),
         y: Math.max(0, gridY),

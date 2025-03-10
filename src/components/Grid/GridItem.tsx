@@ -54,11 +54,12 @@ const GridItem: React.FC<GridItemProps> = ({
 
   // Calculate position and size in pixels
   const style = {
-    transform: `translate(${x * colWidth}px, ${y * rowHeight}px)`,
+    left: `${x * colWidth}px`,
+    top: `${y * rowHeight}px`,
     width: `${w * colWidth}px`,
     height: `${h * rowHeight}px`,
     position: 'absolute' as const,
-    transition: isDragging || isResizing ? 'none' : 'transform 0.2s, width 0.2s, height 0.2s',
+    transition: isDragging || isResizing ? 'none' : 'left 0.2s, top 0.2s, width 0.2s, height 0.2s',
     zIndex: isDragging || isResizing ? 2 : 1
   };
 

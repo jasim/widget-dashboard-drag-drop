@@ -34,7 +34,8 @@ const BorderForHoveredGridItem: React.FC<BorderForHoveredGridItemProps> = ({
 
     setStyle({
       display: 'block',
-      transform: `translate(${item.x * colWidth}px, ${item.y * rowHeight}px)`,
+      left: `${item.x * colWidth}px`,
+      top: `${item.y * rowHeight}px`,
       width: `${item.w * colWidth}px`,
       height: `${item.h * rowHeight}px`
     });
