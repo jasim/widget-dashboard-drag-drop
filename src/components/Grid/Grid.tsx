@@ -115,7 +115,14 @@ const Grid: React.FC<GridProps> = ({
   }, [dragState.active, dragState.itemId, applyLayout]);
   
   // Update debug info whenever relevant state changes - using a ref to prevent infinite loops
-  const prevDebugStateRef = useRef({
+  const prevDebugStateRef = useRef<{
+    active: boolean;
+    itemId: string | null;
+    isResize: boolean;
+    dropActionType: string | null;
+    dropTargetArea: string | null;
+    layoutLength: number;
+  }>({
     active: false,
     itemId: null,
     isResize: false,
