@@ -49,7 +49,6 @@ const BorderForHoveredGridItem: React.FC<BorderForHoveredGridItemProps> = ({
         pointerEvents: 'none',
         zIndex: 3,
         boxSizing: 'border-box',
-        transition: 'transform 0.2s, width 0.2s, height 0.2s'
       }}
     />
   );
