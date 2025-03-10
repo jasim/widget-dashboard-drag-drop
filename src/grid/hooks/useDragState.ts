@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Layout } from '../../types';
-import { updateLayoutItem } from '../layout';
-import { calculateDragPosition, calculateResizeSize } from '../geometry';
+import { updateLayoutItem, getAllCollisions } from '../layout';
+import { calculateDragPosition, calculateResizeSize, handleResizeWithCollisions } from '../geometry';
 import { calculateDropTarget, applyDropOperation, DragTarget } from '../dragOperations';
 
 export interface DragState {
@@ -81,8 +81,22 @@ export const useDragState = ({
         2  // minH
       );
 
-      // Update layout with new size
-      updateLayout(updateLayoutItem(layout, dragState.itemId, { w, h }));
+      // Get the original item before resize
+      const originalItem = layout.find(item => item.i === dragState.itemId);
+      
+      if (originalItem) {
+        // Use the new function to handle resize with collisions
+        const newLayout = handleResizeWithCollisions(
+          layout,
+          dragState.itemId,
+          w,
+          h,
+          originalItem
+        );
+        
+        // Update the entire layout
+        updateLayout(newLayout);
+      }
     } else {
       // Handle dragging using pure function
       const { x, y } = calculateDragPosition(

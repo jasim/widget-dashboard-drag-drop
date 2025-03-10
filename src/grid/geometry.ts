@@ -77,3 +77,96 @@ export const calculateResizeSize = (
     h: Math.max(minH, startSize.h + gridDeltaH)
   };
 };
+
+/**
+ * Handles widget resize with collision detection and adjustment
+ * 
+ * When a widget is resized and would overlap with adjacent widgets:
+ * - For horizontal resize: moves widgets to the right and adjusts their width
+ * - For vertical resize: moves widgets below and adjusts their height
+ */
+export const handleResizeWithCollisions = (
+  layout: Layout[],
+  itemId: string,
+  newW: number,
+  newH: number,
+  originalItem: Layout
+): Layout[] => {
+  const updatedLayout = [...layout];
+  const resizingItem = updatedLayout.find(item => item.i === itemId);
+  
+  if (!resizingItem) return updatedLayout;
+  
+  // Store original dimensions
+  const originalW = originalItem.w;
+  const originalH = originalItem.h;
+  
+  // Calculate deltas
+  const deltaW = newW - originalW;
+  const deltaH = newH - originalH;
+  
+  // Only proceed if we're growing the widget
+  if (deltaW <= 0 && deltaH <= 0) {
+    resizingItem.w = newW;
+    resizingItem.h = newH;
+    return updatedLayout;
+  }
+  
+  // Apply the new size to the resizing item
+  resizingItem.w = newW;
+  resizingItem.h = newH;
+  
+  // Create a temporary layout with the resized item
+  const tempLayout = updatedLayout.map(item => 
+    item.i === itemId ? resizingItem : item
+  );
+  
+  // Find all items that now collide with the resized item
+  const collisions = getAllCollisions(tempLayout, resizingItem)
+    .filter(item => item.i !== itemId);
+  
+  if (collisions.length === 0) {
+    // No collisions, just return the updated layout
+    return updatedLayout;
+  }
+  
+  // Handle horizontal resize collisions
+  if (deltaW > 0) {
+    // Find items to the right that need to be moved
+    const itemsToRight = collisions.filter(item => 
+      item.x >= originalItem.x + originalW
+    );
+    
+    // Move items to the right
+    itemsToRight.forEach(item => {
+      const index = updatedLayout.findIndex(i => i.i === item.i);
+      if (index !== -1) {
+        updatedLayout[index] = {
+          ...updatedLayout[index],
+          x: updatedLayout[index].x + deltaW
+        };
+      }
+    });
+  }
+  
+  // Handle vertical resize collisions
+  if (deltaH > 0) {
+    // Find items below that need to be moved
+    const itemsBelow = collisions.filter(item => 
+      item.y >= originalItem.y + originalH
+    );
+    
+    // Move items below
+    itemsBelow.forEach(item => {
+      const index = updatedLayout.findIndex(i => i.i === item.i);
+      if (index !== -1) {
+        updatedLayout[index] = {
+          ...updatedLayout[index],
+          y: updatedLayout[index].y + deltaH
+        };
+      }
+    });
+  }
+  
+  return updatedLayout;
+};
