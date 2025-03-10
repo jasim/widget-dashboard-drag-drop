@@ -5,11 +5,11 @@ import { WidgetType } from './types'
 
 function App() {
   const [widgets, setWidgets] = useState<WidgetType[]>([
-    { id: '1', type: 'chart', title: 'Sales Overview', x: 0, y: 0, w: 6, h: 4 },
-    { id: '2', type: 'stats', title: 'Key Metrics', x: 6, y: 0, w: 6, h: 2 },
-    { id: '3', type: 'table', title: 'Recent Transactions', x: 6, y: 2, w: 6, h: 4 },
-    { id: '4', type: 'chart', title: 'Monthly Revenue', x: 0, y: 4, w: 4, h: 4 },
-    { id: '5', type: 'chart', title: 'User Growth', x: 4, y: 4, w: 8, h: 4 },
+    { id: '1', type: 'chart', title: 'Sales Overview', x: 0, y: 0, w: 2, h: 2 },
+    // { id: '2', type: 'stats', title: 'Key Metrics', x: 6, y: 0, w: 6, h: 2 },
+    // { id: '3', type: 'table', title: 'Recent Transactions', x: 6, y: 2, w: 6, h: 4 },
+    // { id: '4', type: 'chart', title: 'Monthly Revenue', x: 0, y: 4, w: 4, h: 4 },
+    // { id: '5', type: 'chart', title: 'User Growth', x: 4, y: 4, w: 8, h: 4 },
   ])
 
   const addWidget = (type: string) => {

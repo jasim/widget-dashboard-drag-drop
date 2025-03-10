@@ -283,7 +283,8 @@ export const calculateDragPosition = (
 ): { x: number; y: number } => {
   const gridDeltaX = pixelToGrid(deltaX, colWidth);
   const gridDeltaY = pixelToGrid(deltaY, rowHeight);
-  
+  console.log(gridDeltaX, "gridDeltaX")
+  console.log(gridDeltaY, "gridDeltaY")
   return {
     x: clamp(startGrid.x + gridDeltaX, 0, cols - 1),
     y: Math.max(0, startGrid.y + gridDeltaY)

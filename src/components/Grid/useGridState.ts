@@ -117,9 +117,12 @@ export const useGridState = ({
             rowHeight,
             cols
           );
-          
+
+          console.log(newPos, "newPos")
+          console.log(JSON.stringify(layout[0], null, 2), "layout[0]")
           // Update layout
           const newLayout = updateLayoutItem(layout, dragState.itemId, newPos);
+          console.log(JSON.stringify(newLayout[0], null, 2), "newLayout[0]")
           setLayout(newLayout);
         }
       }
