@@ -40,10 +40,8 @@ export const decideDropAction = (
   };
   
   const targetLeft = target.x;
-  const targetRight = target.x + target.w;
   const targetTop = target.y;
-  const targetBottom = target.y + target.h;
-  
+
   // Calculate normalized position (0-1) within target
   const normalizedX = (sourceCenter.x - targetLeft) / target.w;
   const normalizedY = (sourceCenter.y - targetTop) / target.h;

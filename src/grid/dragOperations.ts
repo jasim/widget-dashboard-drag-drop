@@ -1,7 +1,7 @@
-import { Layout } from '../types';
-import { updateLayoutItem } from './layout';
-import { calculateDragPosition, calculateResizeSize } from './geometry';
-import { decideDropAction, applyDropAction, DropAction } from './placement';
+import {Layout} from '../types';
+import {calculateDragPosition} from './geometry';
+import {updateLayoutItem} from './layout';
+import {applyDropAction, decideDropAction, DropAction} from './placement';
 
 export interface DragTarget {
   targetItem: Layout | null;

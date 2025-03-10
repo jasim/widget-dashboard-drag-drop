@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { Layout } from '../../types';
-import { updateLayoutItem, getAllCollisions } from '../layout';
+import { Layout } from '@/types.ts';
+import { updateLayoutItem } from '../layout';
 import { calculateDragPosition, calculateResizeSize, handleResizeWithCollisions } from '../geometry';
 import { calculateDropTarget, applyDropOperation, DragTarget } from '../dragOperations';
 

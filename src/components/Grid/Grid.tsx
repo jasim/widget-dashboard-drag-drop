@@ -1,16 +1,16 @@
 import {DropAction} from "@/grid/placement.ts";
-import React, { useState, useRef, useEffect, useCallback } from 'react';
-import GridOverlay from './GridOverlay';
+import React, {useEffect, useRef, useState} from 'react';
+import {getLayoutHeight} from '../../grid/geometry';
+import {DragState, useDragState} from '../../grid/hooks/useDragState';
+import {useGridDom} from '../../grid/hooks/useGridDom';
+import {useGridEvents} from '../../grid/hooks/useGridEvents';
+import {useGridLayout} from '../../grid/hooks/useGridLayout';
 import {Layout, WidgetType} from '../../types';
-import GridItem from './GridItem';
 import BorderForHoveredGridItem from './BorderForHoveredGridItem';
 import DropTargetIndicator from './DropTargetIndicator';
-import { getLayoutHeight } from '../../grid/geometry';
-import { useGridLayout } from '../../grid/hooks/useGridLayout';
-import {DragState, useDragState} from '../../grid/hooks/useDragState';
-import { useGridDom } from '../../grid/hooks/useGridDom';
-import { useGridEvents } from '../../grid/hooks/useGridEvents';
 import styles from './Grid.module.css';
+import GridItem from './GridItem';
+import GridOverlay from './GridOverlay';
 
 // Default row height
 export const DEFAULT_ROW_HEIGHT = 100;
@@ -21,7 +21,6 @@ interface GridProps {
   cols: number;
   isDraggable?: boolean;
   isResizable?: boolean;
-  compactType?: 'vertical' | 'horizontal' | null;
   children: React.ReactNode[];
   rowHeight?: number;
   onDebugInfoUpdate?: (info: {
@@ -41,7 +40,6 @@ const Grid: React.FC<GridProps> = ({
   cols = 12,
   isDraggable = true,
   isResizable = true,
-  compactType = null,
   rowHeight: propRowHeight,
   children,
   onDebugInfoUpdate
@@ -67,7 +65,6 @@ const Grid: React.FC<GridProps> = ({
   const { layout, updateLayout, applyLayout } = useGridLayout({
     widgets,
     setWidgets,
-    compactType
   });
   
   const { 

@@ -5,13 +5,11 @@ import { widgetsToLayout, layoutToWidgets } from '../layout';
 interface UseGridLayoutProps {
   widgets: WidgetType[];
   setWidgets: React.Dispatch<React.SetStateAction<WidgetType[]>>;
-  compactType?: 'vertical' | 'horizontal' | null;
 }
 
 export const useGridLayout = ({ 
   widgets, 
   setWidgets,
-  compactType = null 
 }: UseGridLayoutProps) => {
   const [layout, setLayout] = useState<Layout[]>([]);
 

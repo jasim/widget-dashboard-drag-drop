@@ -1,13 +1,12 @@
-import { useState } from 'react';
+import {DragState} from '@/grid/hooks/useDragState.ts';
+import {DropAction} from '@/grid/placement.ts';
+import {useState} from 'react';
 import styles from './Header.module.css';
-import { DragState } from '@/grid/hooks/useDragState.ts';
-import { DropAction } from '@/grid/placement.ts';
 
 interface HeaderProps {
   onAddWidget: (type: string) => void;
   dragState?: DragState;
   layout?: Array<{ i: string; x: number; y: number; w: number; h: number }>;
-  dropAction?: DropAction | null;
   dropTargetArea?: { x: number; y: number; w: number; h: number } | null;
   cols?: number;
   rowHeight?: number;
@@ -17,7 +16,6 @@ const Header = ({
   onAddWidget, 
   dragState = { active: false, itemId: null, startPos: { x: 0, y: 0 }, startGrid: { x: 0, y: 0 }, isResize: false },
   layout = [],
-  dropAction = null,
   dropTargetArea = null,
   cols = 12,
   rowHeight = 100
@@ -32,9 +30,6 @@ const Header = ({
 
   // Get the current item being dragged
   const draggedItem = dragState.itemId ? layout.find(item => item.i === dragState.itemId) : null;
-
-  // Format coordinates for display
-  const formatCoord = (value: number) => value.toFixed(1);
 
   // Helper to get action description
   const getActionDescription = (action: DropAction | null) => {

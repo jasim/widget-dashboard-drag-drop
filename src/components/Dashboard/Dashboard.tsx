@@ -67,7 +67,6 @@ const Dashboard = ({ widgets, setWidgets, onRemoveWidget, onAddWidget }: Dashboa
         onAddWidget={onAddWidget}
         dragState={debugInfo.dragState}
         layout={debugInfo.layout}
-        dropAction={debugInfo.dropAction}
         dropTargetArea={debugInfo.dropTargetArea}
         cols={cols}
         rowHeight={rowHeight}
@@ -80,7 +79,6 @@ const Dashboard = ({ widgets, setWidgets, onRemoveWidget, onAddWidget }: Dashboa
           rowHeight={rowHeight}
           isDraggable={true}
           isResizable={true}
-          compactType="vertical"
           onDebugInfoUpdate={handleDebugInfoUpdate}
         >
           {widgets.map(widget => (
