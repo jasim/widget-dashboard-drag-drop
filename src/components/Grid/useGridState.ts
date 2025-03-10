@@ -118,11 +118,8 @@ export const useGridState = ({
             cols
           );
 
-          console.log(newPos, "newPos")
-          console.log(JSON.stringify(layout[0], null, 2), "layout[0]")
           // Update layout
           const newLayout = updateLayoutItem(layout, dragState.itemId, newPos);
-          console.log(JSON.stringify(newLayout[0], null, 2), "newLayout[0]")
           setLayout(newLayout);
         }
       }
@@ -174,10 +171,21 @@ export const useGridState = ({
               return item;
             });
           } else {
-            // Standard grid placement - use the same logic as in updateDropTargetArea
+            // Standard grid placement - use the same delta-based logic as in updateDropTargetArea
+            const deltaX = e.clientX - dragState.startPos.x;
+            const deltaY = e.clientY - dragState.startPos.y;
+            
+            // Convert pixel delta to grid units
+            const gridDeltaX = Math.round(deltaX / colWidth);
+            const gridDeltaY = Math.round(deltaY / gridRowHeight);
+            
+            // Calculate new position based on starting position plus delta
+            const newX = Math.max(0, Math.min(dragState.startGrid.x + gridDeltaX, cols - draggedItem.w));
+            const newY = Math.max(0, dragState.startGrid.y + gridDeltaY);
+            
             const newPos = {
-              x: Math.max(0, Math.min(gridX, cols - draggedItem.w)),
-              y: Math.max(0, gridY)
+              x: newX,
+              y: newY
             };
             
             // Update layout
@@ -288,8 +296,6 @@ export const useGridState = ({
       gridY >= item.y && gridY < item.y + item.h    // Within y bounds
     );
 
-    console.log(draggedItem, "draggedItem")
-    console.log(targetItem, "targetItem")
     if (targetItem) {
       // We're hovering over another item, use placement logic
       const action = decideDropAction(draggedItem, targetItem);
@@ -305,16 +311,25 @@ export const useGridState = ({
         h: source.h
       });
     } else {
-      // Not hovering over another item, use standard grid placement
-      // Calculate the position based on the mouse position, not grid position
-      // This ensures the widget follows the cursor exactly
+      // Not hovering over another item, calculate position based on drag delta
+      const deltaX = e.clientX - dragState.startPos.x;
+      const deltaY = e.clientY - dragState.startPos.y;
+    
+      // Convert pixel delta to grid units
+      const gridDeltaX = Math.round(deltaX / colWidth);
+      const gridDeltaY = Math.round(deltaY / gridRowHeight);
+    
+      // Calculate new position based on starting position plus delta
+      const newX = Math.max(0, Math.min(dragState.startGrid.x + gridDeltaX, cols - draggedItem.w));
+      const newY = Math.max(0, dragState.startGrid.y + gridDeltaY);
+    
       const targetArea = {
-        x: Math.max(0, Math.min(gridX, cols - draggedItem.w)),
-        y: Math.max(0, gridY),
+        x: newX,
+        y: newY,
         w: draggedItem.w,
         h: draggedItem.h
       };
-      
+    
       setDropTargetArea(targetArea);
     }
   };
