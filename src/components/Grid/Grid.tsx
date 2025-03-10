@@ -119,7 +119,7 @@ const Grid: React.FC<GridProps> = ({
     active: boolean;
     itemId: string | null;
     isResize: boolean;
-    dropActionType: string | null;
+    dropActionType: "swap" | "placeLeft" | "placeRight" | "placeTop" | "placeBottom" | "reject" | undefined | null;
     dropTargetArea: string | null;
     layoutLength: number;
   }>({
