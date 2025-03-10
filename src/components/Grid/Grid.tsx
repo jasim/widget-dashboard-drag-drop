@@ -101,11 +101,6 @@ const Grid: React.FC<GridProps> = ({
     setHoveredItemId(id);
   };
 
-  // Handle mouse enter and leave for grid items
-  const handleItemMouseEnter = (id: string) => {
-    setHoveredItemId(id);
-  };
-
   const handleItemMouseLeave = () => {
     setHoveredItemId(null);
   };
