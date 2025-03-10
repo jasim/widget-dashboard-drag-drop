@@ -143,7 +143,7 @@ const Grid: React.FC<GridProps> = ({
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [dragState, resizeState, layout, colWidth, rowHeight, compactType, widgets, setWidgets]);
+  }, [dragState, layout, colWidth, rowHeight, compactType, widgets, setWidgets]);
   
   // Handle mouse down on the grid container
   const handleMouseDown = (e: React.MouseEvent) => {
