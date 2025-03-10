@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Layout } from '../../types';
 import { updateLayoutItem } from '../layout';
 import { calculateDragPosition, calculateResizeSize } from '../geometry';
-import { decideDropAction, applyDropAction, DropAction } from '../placement';
+import { calculateDropTarget, applyDropOperation, DragTarget } from '../dragOperations';
 
 export interface DragState {
   active: boolean;
@@ -11,11 +11,7 @@ export interface DragState {
   startGrid: { x: number; y: number };
   isResize: boolean;
   startSize?: { w: number; h: number };
-  dropTarget?: {
-    targetItem: Layout | null;
-    targetArea: { x: number; y: number; w: number; h: number };
-    dropAction: DropAction | null;
-  };
+  dropTarget?: DragTarget;
 }
 
 interface UseDragStateProps {
@@ -53,24 +49,14 @@ export const useDragState = ({
     const item = layout.find(item => item.i === id);
     if (!item) return;
 
-    if (isResize) {
-      setDragState({
-        active: true,
-        itemId: id,
-        startPos: { x: clientX, y: clientY },
-        startGrid: { x: item.x, y: item.y },
-        isResize: true,
-        startSize: { w: item.w, h: item.h }
-      });
-    } else {
-      setDragState({
-        active: true,
-        itemId: id,
-        startPos: { x: clientX, y: clientY },
-        startGrid: { x: item.x, y: item.y },
-        isResize: false
-      });
-    }
+    setDragState({
+      active: true,
+      itemId: id,
+      startPos: { x: clientX, y: clientY },
+      startGrid: { x: item.x, y: item.y },
+      isResize,
+      ...(isResize ? { startSize: { w: item.w, h: item.h } } : {})
+    });
   };
 
   // Update drag position
@@ -84,7 +70,7 @@ export const useDragState = ({
     if (!draggedItem) return;
 
     if (dragState.isResize && dragState.startSize) {
-      // Handle resizing - pure function
+      // Handle resizing using pure function
       const { w, h } = calculateResizeSize(
         dragState.startSize,
         deltaX,
@@ -98,7 +84,7 @@ export const useDragState = ({
       // Update layout with new size
       updateLayout(updateLayoutItem(layout, dragState.itemId, { w, h }));
     } else {
-      // Handle dragging - pure function
+      // Handle dragging using pure function
       const { x, y } = calculateDragPosition(
         dragState.startGrid,
         deltaX,
@@ -133,112 +119,46 @@ export const useDragState = ({
     const draggedItem = layout.find(item => item.i === dragState.itemId);
     if (!draggedItem) return;
     
-    // Find if we're hovering over another item
-    // Explicitly exclude the item being dragged
-    const targetItem = layout.find(item => 
-      item.i !== dragState.itemId && // Not the same item
-      gridX >= item.x && gridX < item.x + item.w && // Within x bounds
-      gridY >= item.y && gridY < item.y + item.h    // Within y bounds
+    // Calculate delta from start position
+    const deltaX = clientX - dragState.startPos.x;
+    const deltaY = clientY - dragState.startPos.y;
+    
+    // Use pure function to calculate drop target
+    const dropTarget = calculateDropTarget(
+      draggedItem,
+      gridX,
+      gridY,
+      layout,
+      deltaX,
+      deltaY,
+      dragState.startGrid,
+      colWidth,
+      rowHeight,
+      cols
     );
-
-    let targetArea;
-    
-    if (targetItem) {
-      // We're hovering over another item, use placement logic
-      const action = decideDropAction(draggedItem, targetItem);
-      
-      // Calculate the preview based on the action
-      const { source } = applyDropAction(draggedItem, targetItem, action);
-      
-      // Create target area
-      targetArea = {
-        x: source.x,
-        y: source.y,
-        w: source.w,
-        h: source.h
-      };
-      
-      // Store the drop action for later use in endDrag
-    } else {
-      // Not hovering over another item, calculate position based on drag delta
-      const deltaX = clientX - dragState.startPos.x;
-      const deltaY = clientY - dragState.startPos.y;
-    
-      // Calculate new position using pure function
-      const { x, y } = calculateDragPosition(
-        dragState.startGrid,
-        deltaX,
-        deltaY,
-        colWidth,
-        rowHeight,
-        cols
-      );
-    
-      targetArea = {
-        x,
-        y,
-        w: draggedItem.w,
-        h: draggedItem.h
-      };
-    }
-    
-    // Calculate drop action once
-    const dropAction = targetItem ? decideDropAction(draggedItem, targetItem) : null;
     
     // Update drag state with the target information
     setDragState(prev => ({
       ...prev,
-      dropTarget: {
-        targetItem: targetItem || null, // Ensure it's Layout | null, not undefined
-        targetArea,
-        dropAction
-      }
+      dropTarget
     }));
     
     // Also update the visual indicator
     if (setDropTargetArea) {
-      setDropTargetArea(targetArea);
+      setDropTargetArea(dropTarget.targetArea);
     }
   };
 
   // End drag operation
   const endDrag = () => {
     if (dragState.active && dragState.itemId) {
-      // Find the dragged item
-      const draggedItem = layout.find(item => item.i === dragState.itemId);
-      if (!draggedItem) return;
-      
-      let newLayout = [...layout];
-      
-      if (!dragState.isResize && dragState.dropTarget) {
-        const { targetItem, targetArea, dropAction } = dragState.dropTarget;
-        
-        if (targetItem && dropAction) {
-          // We're dropping onto another item, use the already calculated drop action
-          // Apply the action to get new positions
-          const { source, target } = applyDropAction(draggedItem, targetItem, dropAction);
-          
-          // Update the layout with new positions
-          newLayout = newLayout.map(item => {
-            if (item.i === draggedItem.i) {
-              return { ...item, x: source.x, y: source.y, w: source.w, h: source.h };
-            }
-            if (item.i === targetItem.i) {
-              return { ...item, x: target.x, y: target.y, w: target.w, h: target.h };
-            }
-            return item;
-          });
-        } else {
-          // Standard grid placement - use the target area that was already calculated
-          const newPos = {
-            x: targetArea.x,
-            y: targetArea.y
-          };
-          
-          // Update layout
-          newLayout = updateLayoutItem(newLayout, dragState.itemId, newPos);
-        }
-      }
+      // Apply the drop operation using pure function
+      const newLayout = applyDropOperation(
+        layout,
+        dragState.itemId,
+        dragState.isResize,
+        dragState.dropTarget
+      );
       
       // Update layout
       updateLayout(newLayout);
