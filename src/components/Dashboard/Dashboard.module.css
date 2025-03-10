@@ -1,0 +1,7 @@
+.dashboard {
+  @apply w-full;
+}
+
+.widgetContainer {
+  @apply bg-widget rounded-lg shadow-md overflow-hidden;
+}
