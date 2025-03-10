@@ -24,6 +24,12 @@ interface UseGridStateProps {
   cols: number;
   compactType?: 'vertical' | 'horizontal' | null;
   rowHeight?: number;
+  setDropTargetArea?: React.Dispatch<React.SetStateAction<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>>;
 }
 
 // Default row height as a constant
@@ -34,7 +40,8 @@ export const useGridState = ({
   setWidgets,
   cols,
   compactType = 'vertical',
-  rowHeight: propRowHeight
+  rowHeight: propRowHeight,
+  setDropTargetArea
 }: UseGridStateProps) => {
   // Use provided rowHeight or default
   const gridRowHeight = propRowHeight || rowHeight;
@@ -135,6 +142,11 @@ export const useGridState = ({
           startGrid: { x: 0, y: 0 },
           isResize: false
         });
+        
+        // Clear drop target area
+        if (setDropTargetArea) {
+          setDropTargetArea(null);
+        }
       }
     };
     
@@ -193,6 +205,49 @@ export const useGridState = ({
     }
   };
   
+  // Function to calculate and update drop target area
+  const updateDropTargetArea = (e: React.MouseEvent) => {
+    if (!dragState.active || dragState.isResize || !setDropTargetArea) return;
+    
+    // Get mouse position relative to container
+    const containerRect = containerRef.current?.getBoundingClientRect();
+    if (!containerRect) return;
+    
+    const mouseX = e.clientX - containerRect.left;
+    const mouseY = e.clientY - containerRect.top;
+    
+    // Convert to grid coordinates
+    const gridX = Math.floor(mouseX / colWidth);
+    const gridY = Math.floor(mouseY / gridRowHeight);
+    
+    // Find the dragged item
+    const draggedItem = layout.find(item => item.i === dragState.itemId);
+    if (!draggedItem) return;
+    
+    // Create a target area with the same size as the dragged item
+    const targetArea = {
+      x: Math.max(0, Math.min(gridX, cols - draggedItem.w)),
+      y: Math.max(0, gridY),
+      w: draggedItem.w,
+      h: draggedItem.h
+    };
+    
+    // Check if the target area overlaps with any other items
+    const isOverlapping = layout.some(item => {
+      if (item.i === dragState.itemId) return false;
+      
+      return !(
+        targetArea.x + targetArea.w <= item.x ||
+        targetArea.x >= item.x + item.w ||
+        targetArea.y + targetArea.h <= item.y ||
+        targetArea.y >= item.y + item.h
+      );
+    });
+    
+    // Only show the drop target if it's a valid position
+    setDropTargetArea(isOverlapping ? null : targetArea);
+  };
+
   return {
     layout,
     containerRef,
@@ -200,7 +255,8 @@ export const useGridState = ({
     dragState,
     startDrag,
     registerItemRef,
-    registerResizeHandleRef
+    registerResizeHandleRef,
+    updateDropTargetArea
   };
 };
 

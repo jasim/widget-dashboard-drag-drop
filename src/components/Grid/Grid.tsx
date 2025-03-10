@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { WidgetType } from '../../types';
 import GridItem from './GridItem';
 import BorderForHoveredGridItem from './BorderForHoveredGridItem';
+import DropTargetIndicator from './DropTargetIndicator';
 import { useGridState, rowHeight } from './useGridState';
 import { getLayoutHeight } from '../../utils/gridUtils';
 import styles from './Grid.module.css';
@@ -41,12 +42,14 @@ const Grid: React.FC<GridProps> = ({
     dragState,
     startDrag,
     registerItemRef,
-    registerResizeHandleRef
+    registerResizeHandleRef,
+    updateDropTargetArea
   } = useGridState({
     widgets,
     setWidgets,
     cols,
-    compactType
+    compactType,
+    setDropTargetArea
   });
   
   // Handle mouse down on the grid container
@@ -79,6 +82,14 @@ const Grid: React.FC<GridProps> = ({
 
   // State to track the currently hovered item
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+  
+  // State to track the drop target area during drag operations
+  const [dropTargetArea, setDropTargetArea] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
 
   // Calculate grid height based on layout
   const gridHeight = Math.max(getLayoutHeight(layout), 4) * gridRowHeight;
@@ -92,16 +103,38 @@ const Grid: React.FC<GridProps> = ({
     setHoveredItemId(null);
   };
 
+  // Handle mouse move to update drop target area
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (dragState.active && !dragState.isResize) {
+      updateDropTargetArea(e);
+    }
+  };
+
+  // Handle mouse up to clear drop target area
+  const handleMouseUp = () => {
+    if (dropTargetArea) {
+      setDropTargetArea(null);
+    }
+  };
+
   return (
     <div 
       ref={containerRef}
       className={styles.gridContainer}
       style={{ height: `${gridHeight}px` }}
       onMouseDown={handleMouseDown}
+      onMouseMove={handleMouseMove}
+      onMouseUp={handleMouseUp}
+      onMouseLeave={handleMouseUp}
     >
       <BorderForHoveredGridItem 
         hoveredItemId={hoveredItemId}
         layout={layout}
+        colWidth={colWidth}
+        rowHeight={gridRowHeight}
+      />
+      <DropTargetIndicator
+        targetArea={dropTargetArea}
         colWidth={colWidth}
         rowHeight={gridRowHeight}
       />
