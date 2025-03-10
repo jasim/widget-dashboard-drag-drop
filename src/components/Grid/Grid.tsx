@@ -23,6 +23,12 @@ interface GridProps {
   compactType?: 'vertical' | 'horizontal' | null;
   children: React.ReactNode[];
   rowHeight?: number;
+  onDebugInfoUpdate?: (info: {
+    dragState: DragState;
+    layout: Layout[];
+    dropAction?: DropAction | null;
+    dropTargetArea?: { x: number; y: number; w: number; h: number } | null;
+  }) => void;
 }
 
 /**
@@ -36,7 +42,8 @@ const Grid: React.FC<GridProps> = ({
   isResizable = true,
   compactType = null,
   rowHeight: propRowHeight,
-  children
+  children,
+  onDebugInfoUpdate
 }) => {
   // Use the prop value if provided, otherwise use the default
   const gridRowHeight = propRowHeight || DEFAULT_ROW_HEIGHT;
@@ -105,6 +112,18 @@ const Grid: React.FC<GridProps> = ({
       applyLayout();
     }
   }, [dragState.active, dragState.itemId, applyLayout]);
+  
+  // Update debug info whenever relevant state changes
+  useEffect(() => {
+    if (onDebugInfoUpdate) {
+      onDebugInfoUpdate({
+        dragState,
+        layout,
+        dropAction: dragState.dropTarget?.dropAction,
+        dropTargetArea
+      });
+    }
+  }, [dragState, layout, dropTargetArea, onDebugInfoUpdate]);
 
   // Handle mouse enter and leave for grid items
   const handleItemMouseEnter = (id: string) => {

@@ -1,33 +1,140 @@
 .header {
-  background-color: #4f46e5;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  padding: 1rem;
+  background-color: #1a1a1a;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 0.5rem 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 3rem;
+  font-family: monospace;
+  font-size: 0.8rem;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .title {
-  color: white;
-  font-size: 1.5rem;
+  color: #f0f0f0;
+  font-size: 1rem;
   font-weight: bold;
+  margin: 0;
 }
 
-.controls {
+.gridInfo {
+  color: #888;
+  font-size: 0.75rem;
+  background-color: #2a2a2a;
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+}
+
+.debugPanel {
+  flex: 1;
+  margin: 0 1rem;
+  background-color: #2a2a2a;
+  border-radius: 3px;
+  padding: 0.25rem 0.5rem;
+  max-width: 60%;
+  height: 1.8rem;
   display: flex;
-  gap: 0.5rem;
+  align-items: center;
+  overflow: hidden;
 }
 
-.button {
-  padding: 0.5rem 1rem;
-  background-color: white;
-  color: #4f46e5;
+.debugInfo {
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.debugSection {
+  display: grid;
+  grid-template-columns: repeat(8, auto);
+  gap: 0.25rem 0.5rem;
+  width: 100%;
+}
+
+.debugLabel {
+  color: #888;
+  font-size: 0.7rem;
+}
+
+.debugValue {
+  color: #f0f0f0;
+  font-weight: bold;
+  font-size: 0.7rem;
+  margin-right: 0.75rem;
+}
+
+.statusMessage {
+  color: #888;
+  font-size: 0.75rem;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+}
+
+.addWidgetContainer {
+  position: relative;
+}
+
+.addButton {
+  background-color: #3a3a3a;
+  color: #f0f0f0;
   border: none;
-  border-radius: 0.25rem;
+  border-radius: 3px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
   cursor: pointer;
-  font-weight: 500;
+  display: flex;
+  align-items: center;
+  font-family: inherit;
 }
 
-.button:hover {
-  background-color: #f9fafb;
+.addButton:hover {
+  background-color: #4a4a4a;
+}
+
+.dropdownIcon {
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-left: 0.25rem;
+}
+
+.dropdown {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 0.25rem;
+  background-color: #2a2a2a;
+  border-radius: 3px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  z-index: 50;
+  width: 8rem;
+}
+
+.dropdown ul {
+  list-style: none;
+  margin: 0;
+  padding: 0.25rem 0;
+}
+
+.dropdownItem {
+  width: 100%;
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+  background: none;
+  border: none;
+  color: #f0f0f0;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.dropdownItem:hover {
+  background-color: #3a3a3a;
 }

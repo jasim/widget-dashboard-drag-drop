@@ -5,8 +5,18 @@
 .widgetContainer {
   @apply bg-widget rounded-lg shadow-md overflow-hidden;
 }
-.dashboard {
+.dashboardContainer {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
   width: 100%;
+}
+
+.dashboardContent {
+  flex: 1;
+  overflow: auto;
+  padding: 1rem;
+  background-color: #f1f5f9;
 }
 
 .widgetContainer {
