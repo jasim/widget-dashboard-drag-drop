@@ -6,7 +6,6 @@ import GridItem from './GridItem';
 import BorderForHoveredGridItem from './BorderForHoveredGridItem';
 import DropTargetIndicator from './DropTargetIndicator';
 import { getLayoutHeight } from '../../grid/geometry';
-import { useEffect } from 'react';
 import { useGridLayout } from '../../grid/hooks/useGridLayout';
 import {DragState, useDragState} from '../../grid/hooks/useDragState';
 import { useGridDom } from '../../grid/hooks/useGridDom';
@@ -120,22 +119,6 @@ const Grid: React.FC<GridProps> = ({
     // Update dragging state for grid overlay
     setIsDragging(dragState.active);
   }, [dragState.active, dragState.itemId, applyLayout]);
-  
-  // Get container width for grid overlay
-  const [containerWidth, setContainerWidth] = useState(0);
-  
-  // Update container width on resize
-  const updateContainerWidth = useCallback(() => {
-    if (containerRef.current) {
-      setContainerWidth(containerRef.current.offsetWidth);
-    }
-  }, []);
-  
-  useEffect(() => {
-    updateContainerWidth();
-    window.addEventListener('resize', updateContainerWidth);
-    return () => window.removeEventListener('resize', updateContainerWidth);
-  }, [updateContainerWidth]);
   
   // Update debug info whenever relevant state changes - using a ref to prevent infinite loops
   const prevDebugStateRef = useRef<{
