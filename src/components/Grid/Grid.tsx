@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { WidgetType } from '../../types';
 import GridItem from './GridItem';
+import BorderForHoveredGridItem from './BorderForHoveredGridItem';
 import { useGridState, rowHeight } from './useGridState';
 import { getLayoutHeight } from '../../utils/gridUtils';
 import styles from './Grid.module.css';
@@ -76,8 +77,20 @@ const Grid: React.FC<GridProps> = ({
     }
   };
 
+  // State to track the currently hovered item
+  const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+
   // Calculate grid height based on layout
   const gridHeight = Math.max(getLayoutHeight(layout), 4) * gridRowHeight;
+
+  // Handle mouse enter and leave for grid items
+  const handleItemMouseEnter = (id: string) => {
+    setHoveredItemId(id);
+  };
+
+  const handleItemMouseLeave = () => {
+    setHoveredItemId(null);
+  };
 
   return (
     <div 
@@ -86,6 +99,12 @@ const Grid: React.FC<GridProps> = ({
       style={{ height: `${gridHeight}px` }}
       onMouseDown={handleMouseDown}
     >
+      <BorderForHoveredGridItem 
+        hoveredItemId={hoveredItemId}
+        layout={layout}
+        colWidth={colWidth}
+        rowHeight={gridRowHeight}
+      />
       {React.Children.map(children, (child, index) => {
         if (!React.isValidElement(child)) return null;
         
@@ -109,6 +128,8 @@ const Grid: React.FC<GridProps> = ({
             registerResizeHandleRef={registerResizeHandleRef}
             isDragging={dragState.active && dragState.itemId === layoutItem.i && !dragState.isResize}
             isResizing={dragState.active && dragState.itemId === layoutItem.i && dragState.isResize}
+            onMouseEnter={() => handleItemMouseEnter(layoutItem.i)}
+            onMouseLeave={handleItemMouseLeave}
           >
             {child}
           </GridItem>

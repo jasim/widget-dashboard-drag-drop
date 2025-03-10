@@ -14,6 +14,8 @@ interface GridItemProps {
   isResizing: boolean;
   registerRef: (id: string, ref: HTMLDivElement | null) => void;
   registerResizeHandleRef: (id: string, ref: HTMLDivElement | null) => void;
+  onMouseEnter: () => void;
+  onMouseLeave: () => void;
   children: React.ReactNode;
 }
 
@@ -30,6 +32,8 @@ const GridItem: React.FC<GridItemProps> = ({
   isResizing,
   registerRef,
   registerResizeHandleRef,
+  onMouseEnter,
+  onMouseLeave,
   children
 }) => {
   const elementRef = useRef<HTMLDivElement>(null);
@@ -64,6 +68,8 @@ const GridItem: React.FC<GridItemProps> = ({
       className={styles.gridItem}
       style={style}
       data-id={id}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {children}
       {isResizable && (
