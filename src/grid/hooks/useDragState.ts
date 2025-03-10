@@ -183,7 +183,7 @@ export const useDragState = ({
     setDragState(prev => ({
       ...prev,
       dropTarget: {
-        targetItem,
+        targetItem: targetItem || null, // Ensure it's Layout | null, not undefined
         targetArea
       }
     }));
