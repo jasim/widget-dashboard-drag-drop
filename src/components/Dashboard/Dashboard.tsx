@@ -1,4 +1,4 @@
-import { WidgetType } from '../../types';
+import { WidgetType } from '@/types.ts';
 import Widget from '../Widget/Widget';
 import Grid from '../Grid/Grid';
 import styles from './Dashboard.module.css';
