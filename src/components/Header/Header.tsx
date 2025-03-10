@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import styles from './Header.module.css';
-import { DragState } from '../../grid/hooks/useDragState';
-import { DropAction } from '../../grid/placement';
+import { DragState } from '@/grid/hooks/useDragState.ts';
+import { DropAction } from '@/grid/placement.ts';
 
 interface HeaderProps {
   onAddWidget: (type: string) => void;
