@@ -93,25 +93,49 @@ export const applyDropAction = (
 
     case "placeLeft":
       return {
-        source: { ...source, x: target.x, w: action.newWidth },
+        // For horizontal placement, ensure source is at least as tall as target
+        source: { 
+          ...source, 
+          x: target.x, 
+          w: action.newWidth,
+          h: source.h < target.h ? target.h : source.h 
+        },
         target: { ...target, x: target.x + action.newWidth, w: target.w - action.newWidth },
       };
 
     case "placeRight":
       return {
-        source: { ...source, x: target.x + target.w - action.newWidth, w: action.newWidth },
+        // For horizontal placement, ensure source is at least as tall as target
+        source: { 
+          ...source, 
+          x: target.x + target.w - action.newWidth, 
+          w: action.newWidth,
+          h: source.h < target.h ? target.h : source.h 
+        },
         target: { ...target, w: target.w - action.newWidth },
       };
 
     case "placeTop":
       return {
-        source: { ...source, y: target.y, h: action.newHeight },
+        // For vertical placement, ensure source is at least as wide as target
+        source: { 
+          ...source, 
+          y: target.y, 
+          h: action.newHeight,
+          w: source.w < target.w ? target.w : source.w 
+        },
         target: { ...target, y: target.y + action.newHeight, h: target.h - action.newHeight },
       };
 
     case "placeBottom":
       return {
-        source: { ...source, y: target.y + target.h - action.newHeight, h: action.newHeight },
+        // For vertical placement, ensure source is at least as wide as target
+        source: { 
+          ...source, 
+          y: target.y + target.h - action.newHeight, 
+          h: action.newHeight,
+          w: source.w < target.w ? target.w : source.w 
+        },
         target: { ...target, h: target.h - action.newHeight },
       };
 
