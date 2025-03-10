@@ -18,6 +18,10 @@ interface DragState {
   startGrid: { x: number; y: number };
   isResize: boolean;
   startSize?: { w: number; h: number };
+  dropTarget?: {
+    targetItem: Layout | null;
+    targetArea: { x: number; y: number; w: number; h: number };
+  };
 }
 
 interface UseGridStateProps {
@@ -54,7 +58,8 @@ export const useGridState = ({
     itemId: null,
     startPos: { x: 0, y: 0 },
     startGrid: { x: 0, y: 0 },
-    isResize: false
+    isResize: false,
+    dropTarget: undefined
   });
   
   const containerRef = useRef<HTMLDivElement>(null);
@@ -125,33 +130,16 @@ export const useGridState = ({
       }
     };
     
-    const handleMouseUp = (e: MouseEvent) => {
+    const handleMouseUp = () => {
       if (dragState.active && dragState.itemId) {
-        // Get mouse position relative to container
-        const containerRect = containerRef.current?.getBoundingClientRect();
-        if (!containerRect) return;
-        
-        const mouseX = e.clientX - containerRect.left;
-        const mouseY = e.clientY - containerRect.top;
-        
-        // Convert to grid coordinates
-        const gridX = Math.floor(mouseX / colWidth);
-        const gridY = Math.floor(mouseY / gridRowHeight);
-        
         // Find the dragged item
         const draggedItem = layout.find(item => item.i === dragState.itemId);
         if (!draggedItem) return;
         
         let newLayout = [...layout];
         
-        if (!dragState.isResize) {
-          // Find if we're dropping onto another item
-          // Make sure we're not considering the item being dragged
-          const targetItem = layout.find(item => 
-            item.i !== dragState.itemId && // Not the same item
-            gridX >= item.x && gridX < item.x + item.w && // Within x bounds
-            gridY >= item.y && gridY < item.y + item.h    // Within y bounds
-          );
+        if (!dragState.isResize && dragState.dropTarget) {
+          const { targetItem, targetArea } = dragState.dropTarget;
           
           if (targetItem) {
             // We're dropping onto another item, use placement logic
@@ -171,21 +159,10 @@ export const useGridState = ({
               return item;
             });
           } else {
-            // Standard grid placement - use the same delta-based logic as in updateDropTargetArea
-            const deltaX = e.clientX - dragState.startPos.x;
-            const deltaY = e.clientY - dragState.startPos.y;
-            
-            // Convert pixel delta to grid units
-            const gridDeltaX = Math.round(deltaX / colWidth);
-            const gridDeltaY = Math.round(deltaY / gridRowHeight);
-            
-            // Calculate new position based on starting position plus delta
-            const newX = Math.max(0, Math.min(dragState.startGrid.x + gridDeltaX, cols - draggedItem.w));
-            const newY = Math.max(0, dragState.startGrid.y + gridDeltaY);
-            
+            // Standard grid placement - use the target area that was already calculated
             const newPos = {
-              x: newX,
-              y: newY
+              x: targetArea.x,
+              y: targetArea.y
             };
             
             // Update layout
@@ -204,7 +181,8 @@ export const useGridState = ({
           itemId: null,
           startPos: { x: 0, y: 0 },
           startGrid: { x: 0, y: 0 },
-          isResize: false
+          isResize: false,
+          dropTarget: undefined
         });
         
         // Clear drop target area
@@ -239,7 +217,8 @@ export const useGridState = ({
         startPos: { x: e.clientX, y: e.clientY },
         startGrid: { x: item.x, y: item.y },
         isResize: true,
-        startSize: { w: item.w, h: item.h }
+        startSize: { w: item.w, h: item.h },
+        dropTarget: undefined
       });
     } else {
       setDragState({
@@ -247,7 +226,8 @@ export const useGridState = ({
         itemId: id,
         startPos: { x: e.clientX, y: e.clientY },
         startGrid: { x: item.x, y: item.y },
-        isResize: false
+        isResize: false,
+        dropTarget: undefined
       });
     }
   };
@@ -271,7 +251,7 @@ export const useGridState = ({
   
   // Function to calculate and update drop target area
   const updateDropTargetArea = (e: React.MouseEvent) => {
-    if (!dragState.active || dragState.isResize || !setDropTargetArea) return;
+    if (!dragState.active || dragState.isResize) return;
     
     // Get mouse position relative to container
     const containerRect = containerRef.current?.getBoundingClientRect();
@@ -296,6 +276,8 @@ export const useGridState = ({
       gridY >= item.y && gridY < item.y + item.h    // Within y bounds
     );
 
+    let targetArea;
+    
     if (targetItem) {
       // We're hovering over another item, use placement logic
       const action = decideDropAction(draggedItem, targetItem);
@@ -303,13 +285,13 @@ export const useGridState = ({
       // Calculate the preview based on the action
       const { source } = applyDropAction(draggedItem, targetItem, action);
       
-      // Update the drop target area to show the preview
-      setDropTargetArea({
+      // Create target area
+      targetArea = {
         x: source.x,
         y: source.y,
         w: source.w,
         h: source.h
-      });
+      };
     } else {
       // Not hovering over another item, calculate position based on drag delta
       const deltaX = e.clientX - dragState.startPos.x;
@@ -323,13 +305,25 @@ export const useGridState = ({
       const newX = Math.max(0, Math.min(dragState.startGrid.x + gridDeltaX, cols - draggedItem.w));
       const newY = Math.max(0, dragState.startGrid.y + gridDeltaY);
     
-      const targetArea = {
+      targetArea = {
         x: newX,
         y: newY,
         w: draggedItem.w,
         h: draggedItem.h
       };
+    }
     
+    // Update drag state with the target information
+    setDragState(prev => ({
+      ...prev,
+      dropTarget: {
+        targetItem,
+        targetArea
+      }
+    }));
+    
+    // Also update the visual indicator
+    if (setDropTargetArea) {
       setDropTargetArea(targetArea);
     }
   };
