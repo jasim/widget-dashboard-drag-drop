@@ -34,6 +34,17 @@ const Grid: React.FC<GridProps> = ({
 }) => {
   // Use the prop value if provided, otherwise use the default
   const gridRowHeight = propRowHeight || rowHeight;
+  // State to track the currently hovered item
+  const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
+  
+  // State to track the drop target area during drag operations
+  const [dropTargetArea, setDropTargetArea] = useState<{
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+  } | null>(null);
+  
   // Use our custom hook for grid state management
   const {
     layout,
@@ -51,6 +62,9 @@ const Grid: React.FC<GridProps> = ({
     compactType,
     setDropTargetArea
   });
+  
+  // Calculate grid height based on layout
+  const gridHeight = Math.max(getLayoutHeight(layout), 4) * gridRowHeight;
   
   // Handle mouse down on the grid container
   const handleMouseDown = (e: React.MouseEvent) => {

@@ -28,7 +28,7 @@ const DropTargetIndicator: React.FC<DropTargetIndicatorProps> = ({
     backgroundColor: 'rgba(59, 130, 246, 0.3)', // Tailwind blue-500 with opacity
     border: '2px dashed #3b82f6',
     zIndex: 2,
-    pointerEvents: 'none',
+    pointerEvents: 'none' as const,
     boxSizing: 'border-box' as const,
   };
 
