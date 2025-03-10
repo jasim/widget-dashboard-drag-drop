@@ -3,9 +3,16 @@ import { WidgetType } from '../../types';
 import GridItem from './GridItem';
 import BorderForHoveredGridItem from './BorderForHoveredGridItem';
 import DropTargetIndicator from './DropTargetIndicator';
-import { useGridState, rowHeight } from './useGridState';
-import { getLayoutHeight } from '../../utils/gridUtils';
+import { getLayoutHeight } from '../../grid/geometry';
+import { useEffect } from 'react';
+import { useGridLayout } from '../../grid/hooks/useGridLayout';
+import { useDragState } from '../../grid/hooks/useDragState';
+import { useGridDom } from '../../grid/hooks/useGridDom';
+import { useGridEvents } from '../../grid/hooks/useGridEvents';
 import styles from './Grid.module.css';
+
+// Default row height
+export const DEFAULT_ROW_HEIGHT = 100;
 
 interface GridProps {
   widgets: WidgetType[];
@@ -15,7 +22,6 @@ interface GridProps {
   isResizable?: boolean;
   compactType?: 'vertical' | 'horizontal' | null;
   children: React.ReactNode[];
-  // We need to add rowHeight back as an optional prop with default value
   rowHeight?: number;
 }
 
@@ -33,7 +39,7 @@ const Grid: React.FC<GridProps> = ({
   children
 }) => {
   // Use the prop value if provided, otherwise use the default
-  const gridRowHeight = propRowHeight || rowHeight;
+  const gridRowHeight = propRowHeight || DEFAULT_ROW_HEIGHT;
   
   // State to track the currently hovered item
   const [hoveredItemId, setHoveredItemId] = useState<string | null>(null);
@@ -46,55 +52,59 @@ const Grid: React.FC<GridProps> = ({
     h: number;
   } | null>(null);
   
-  // Use our custom hook for grid state management
-  const {
-    layout,
-    containerRef,
-    colWidth,
-    dragState,
-    startDrag,
-    registerItemRef,
-    registerResizeHandleRef,
-    updateDropTargetArea
-  } = useGridState({
+  // Use our custom hooks for grid state management
+  const { layout, updateLayout, applyLayout } = useGridLayout({
     widgets,
     setWidgets,
+    compactType
+  });
+  
+  const { 
+    containerRef, 
+    containerWidth, 
+    registerItemRef, 
+    registerResizeHandleRef 
+  } = useGridDom();
+  
+  // Calculate column width based on container width
+  const colWidth = containerWidth / cols;
+  
+  const { 
+    dragState, 
+    startDrag, 
+    updateDragPosition, 
+    updateDropTargetArea: updateDragTargetArea, 
+    endDrag 
+  } = useDragState({
+    layout,
+    updateLayout,
     cols,
-    compactType,
+    rowHeight: gridRowHeight,
+    colWidth,
     setDropTargetArea
+  });
+  
+  // Set up event handlers
+  const { handleMouseDown } = useGridEvents({
+    dragState,
+    startDrag,
+    updateDragPosition,
+    updateDropTargetArea: updateDragTargetArea,
+    endDrag,
+    containerRef,
+    isResizable,
+    isDraggable
   });
   
   // Calculate grid height based on layout
   const gridHeight = Math.max(getLayoutHeight(layout), 4) * gridRowHeight;
   
-  // Handle mouse down on the grid container
-  const handleMouseDown = (e: React.MouseEvent) => {
-    // Find the target element and check if it's a grid item or resize handle
-    const target = e.target as HTMLElement;
-    
-    // Find the closest grid item parent
-    let gridItemElement = target.closest(`.${styles.gridItem}`) as HTMLElement;
-    if (!gridItemElement) return;
-    
-    // Get the widget id from the element
-    const id = gridItemElement.dataset.id;
-    if (!id) return;
-    
-    // Check if it's a resize handle
-    const isResizeHandle = target.closest(`.${styles.resizeHandle}`);
-    
-    if (isResizeHandle && isResizable) {
-      // Handle resize start
-      e.preventDefault();
-      e.stopPropagation();
-      startDrag(id, e, true);
-    } else if (isDraggable) {
-      // Handle drag start
-      e.preventDefault();
-      startDrag(id, e, false);
+  // Apply layout changes to widgets when drag ends
+  useEffect(() => {
+    if (!dragState.active && dragState.itemId !== null) {
+      applyLayout();
     }
-  };
-
+  }, [dragState.active, dragState.itemId, applyLayout]);
 
   // Handle mouse enter and leave for grid items
   const handleItemMouseEnter = (id: string) => {
@@ -105,29 +115,12 @@ const Grid: React.FC<GridProps> = ({
     setHoveredItemId(null);
   };
 
-  // Handle mouse move to update drop target area
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (dragState.active && !dragState.isResize) {
-      updateDropTargetArea(e);
-    }
-  };
-
-  // Handle mouse up to clear drop target area
-  const handleMouseUp = () => {
-    if (dropTargetArea) {
-      setDropTargetArea(null);
-    }
-  };
-
   return (
     <div 
       ref={containerRef}
       className={styles.gridContainer}
       style={{ height: `${gridHeight}px` }}
       onMouseDown={handleMouseDown}
-      onMouseMove={handleMouseMove}
-      onMouseUp={handleMouseUp}
-      onMouseLeave={handleMouseUp}
     >
       <BorderForHoveredGridItem 
         hoveredItemId={hoveredItemId}

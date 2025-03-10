@@ -69,6 +69,7 @@ const GridItem: React.FC<GridItemProps> = ({
       className={styles.gridItem}
       style={style}
       data-id={id}
+      data-grid-item="true"
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
     >
@@ -78,6 +79,7 @@ const GridItem: React.FC<GridItemProps> = ({
           ref={resizeHandleRef}
           className={styles.resizeHandle}
           data-id={id}
+          data-resize-handle="true"
         />
       )}
     </div>
