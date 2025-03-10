@@ -149,6 +149,7 @@ export const useGridState = ({
         
         if (!dragState.isResize) {
           // Find if we're dropping onto another item
+          // Make sure we're not considering the item being dragged
           const targetItem = layout.find(item => 
             item.i !== dragState.itemId && // Not the same item
             gridX >= item.x && gridX < item.x + item.w && // Within x bounds
@@ -280,6 +281,7 @@ export const useGridState = ({
     if (!draggedItem) return;
     
     // Find if we're hovering over another item
+    // Explicitly exclude the item being dragged
     const targetItem = layout.find(item => 
       item.i !== dragState.itemId && // Not the same item
       gridX >= item.x && gridX < item.x + item.w && // Within x bounds

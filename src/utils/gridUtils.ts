@@ -34,11 +34,16 @@ export type DropAction =
  * Determines the best action to take when dropping source onto target.
  *
  * This function does not modify elements—it only decides what should happen.
+ * It assumes source and target are different items (source.i !== target.i).
  */
 export const decideDropAction = (
   source: Layout,
   target: Layout
 ): DropAction => {
+  // Safety check - if somehow the same item is passed as source and target
+  if (source.i === target.i) {
+    return { type: "reject", reason: "Cannot place an item onto itself" };
+  }
   const overlapX = (source.x + source.w / 2) - (target.x + target.w / 2);
   const overlapY = (source.y + source.h / 2) - (target.y + target.h / 2);
   const absOverlapX = Math.abs(overlapX);
@@ -81,6 +86,11 @@ export const applyDropAction = (
   target: Layout,
   action: DropAction
 ): { source: Layout; target: Layout } => {
+  // Safety check - if somehow the same item is passed as source and target
+  if (source.i === target.i) {
+    console.warn("Cannot apply drop action on the same item");
+    return { source, target };
+  }
   switch (action.type) {
     case "swap":
       return {
