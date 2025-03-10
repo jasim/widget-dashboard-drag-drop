@@ -1,4 +1,5 @@
 import { Layout } from '../types';
+import { getAllCollisions } from './layout';
 
 /**
  * Check if two rectangles overlap
