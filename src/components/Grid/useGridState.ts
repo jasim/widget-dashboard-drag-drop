@@ -287,7 +287,9 @@ export const useGridState = ({
       gridX >= item.x && gridX < item.x + item.w && // Within x bounds
       gridY >= item.y && gridY < item.y + item.h    // Within y bounds
     );
-    
+
+    console.log(draggedItem, "draggedItem")
+    console.log(targetItem, "targetItem")
     if (targetItem) {
       // We're hovering over another item, use placement logic
       const action = decideDropAction(draggedItem, targetItem);
