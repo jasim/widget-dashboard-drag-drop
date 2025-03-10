@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Layout } from '../../types';
 import { updateLayoutItem } from '../layout';
 import { calculateDragPosition, calculateResizeSize } from '../geometry';
-import { decideDropAction, applyDropAction } from '../placement';
+import { decideDropAction, applyDropAction, DropAction } from '../placement';
 
 export interface DragState {
   active: boolean;
@@ -14,6 +14,7 @@ export interface DragState {
   dropTarget?: {
     targetItem: Layout | null;
     targetArea: { x: number; y: number; w: number; h: number };
+    dropAction?: DropAction | null;
   };
 }
 
@@ -156,6 +157,8 @@ export const useDragState = ({
         w: source.w,
         h: source.h
       };
+      
+      // Store the drop action for debugging display
     } else {
       // Not hovering over another item, calculate position based on drag delta
       const deltaX = clientX - dragState.startPos.x;
@@ -184,7 +187,8 @@ export const useDragState = ({
       ...prev,
       dropTarget: {
         targetItem: targetItem || null, // Ensure it's Layout | null, not undefined
-        targetArea
+        targetArea,
+        dropAction: targetItem ? decideDropAction(draggedItem, targetItem) : null
       }
     }));
     
