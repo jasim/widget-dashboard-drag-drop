@@ -6,7 +6,9 @@ import {
   compactLayout,
   updateLayoutItem,
   calculateDragPosition,
-  calculateResizeSize
+  calculateResizeSize,
+  decideDropAction,
+  applyDropAction
 } from '../../utils/gridUtils';
 
 interface DragState {
@@ -123,10 +125,63 @@ export const useGridState = ({
       }
     };
     
-    const handleMouseUp = () => {
-      if (dragState.active) {
-        // Apply compaction if needed
+    const handleMouseUp = (e: MouseEvent) => {
+      if (dragState.active && dragState.itemId) {
+        // Get mouse position relative to container
+        const containerRect = containerRef.current?.getBoundingClientRect();
+        if (!containerRect) return;
+        
+        const mouseX = e.clientX - containerRect.left;
+        const mouseY = e.clientY - containerRect.top;
+        
+        // Convert to grid coordinates
+        const gridX = Math.floor(mouseX / colWidth);
+        const gridY = Math.floor(mouseY / gridRowHeight);
+        
+        // Find the dragged item
+        const draggedItem = layout.find(item => item.i === dragState.itemId);
+        if (!draggedItem) return;
+        
         let newLayout = [...layout];
+        
+        if (!dragState.isResize) {
+          // Find if we're dropping onto another item
+          const targetItem = layout.find(item => 
+            item.i !== dragState.itemId && // Not the same item
+            gridX >= item.x && gridX < item.x + item.w && // Within x bounds
+            gridY >= item.y && gridY < item.y + item.h    // Within y bounds
+          );
+          
+          if (targetItem) {
+            // We're dropping onto another item, use placement logic
+            const action = decideDropAction(draggedItem, targetItem);
+            
+            // Apply the action to get new positions
+            const { source, target } = applyDropAction(draggedItem, targetItem, action);
+            
+            // Update the layout with new positions
+            newLayout = newLayout.map(item => {
+              if (item.i === draggedItem.i) {
+                return { ...item, x: source.x, y: source.y, w: source.w, h: source.h };
+              }
+              if (item.i === targetItem.i) {
+                return { ...item, x: target.x, y: target.y, w: target.w, h: target.h };
+              }
+              return item;
+            });
+          } else {
+            // Standard grid placement
+            const newPos = {
+              x: Math.max(0, Math.min(gridX, cols - draggedItem.w)),
+              y: Math.max(0, gridY)
+            };
+            
+            // Update layout
+            newLayout = updateLayoutItem(newLayout, dragState.itemId, newPos);
+          }
+        }
+        
+        // Apply compaction if needed
         if (compactType === 'vertical') {
           newLayout = compactLayout(newLayout);
         }
@@ -224,16 +279,38 @@ export const useGridState = ({
     const draggedItem = layout.find(item => item.i === dragState.itemId);
     if (!draggedItem) return;
     
-    // Create a target area with the same size as the dragged item
-    const targetArea = {
-      x: Math.max(0, Math.min(gridX, cols - draggedItem.w)),
-      y: Math.max(0, gridY),
-      w: draggedItem.w,
-      h: draggedItem.h
-    };
+    // Find if we're hovering over another item
+    const targetItem = layout.find(item => 
+      item.i !== dragState.itemId && // Not the same item
+      gridX >= item.x && gridX < item.x + item.w && // Within x bounds
+      gridY >= item.y && gridY < item.y + item.h    // Within y bounds
+    );
     
-    // Always show the drop target indicator regardless of overlap
-    setDropTargetArea(targetArea);
+    if (targetItem) {
+      // We're hovering over another item, use placement logic
+      const action = decideDropAction(draggedItem, targetItem);
+      
+      // Calculate the preview based on the action
+      const { source } = applyDropAction(draggedItem, targetItem, action);
+      
+      // Update the drop target area to show the preview
+      setDropTargetArea({
+        x: source.x,
+        y: source.y,
+        w: source.w,
+        h: source.h
+      });
+    } else {
+      // Not hovering over another item, use standard grid placement
+      const targetArea = {
+        x: Math.max(0, Math.min(gridX, cols - draggedItem.w)),
+        y: Math.max(0, gridY),
+        w: draggedItem.w,
+        h: draggedItem.h
+      };
+      
+      setDropTargetArea(targetArea);
+    }
   };
 
   return {
