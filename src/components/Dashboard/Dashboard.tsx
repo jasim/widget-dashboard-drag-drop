@@ -35,7 +35,7 @@ const Dashboard = ({ widgets, setWidgets, onRemoveWidget, onAddWidget }: Dashboa
   });
 
   // Columns and row height configuration
-  const cols = 12;
+  const cols = 24;
   const rowHeight = 100;
 
   // Handler to update debug information
